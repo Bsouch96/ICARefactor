@@ -5,7 +5,10 @@
  */
 package mas;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -17,13 +20,27 @@ import java.util.TreeMap;
  */
 public class Router extends MetaAgent
 {
-    public volatile TreeMap<String, MetaAgent> routerRouting = new TreeMap<>();
-    private volatile TreeMap<String, Socket> networkPortals = new TreeMap<>(); //Used when local users are added.
-    public volatile ArrayList<Portal> localPortals = new ArrayList<>();
+    public volatile TreeMap<String, MetaAgent> routerRouting;
+    private volatile TreeMap<String, Socket> networkPortals; //Used when local users are added.
+    public volatile ArrayList<Portal> localPortals;
+    ServerSocket serverSocket;
     
     public Router(String userName)
     {
         super(userName, null);
+        routerRouting = new TreeMap<>();
+        networkPortals = new TreeMap<>();
+        localPortals = new ArrayList<>();
+        try
+        {
+            serverSocket = new ServerSocket();
+        }catch(UnknownHostException uh)
+        {
+            System.out.println("Host Unknown");
+        }catch(IOException io)
+        {
+            System.out.println("IO Exception");
+        }
     }
 
     public TreeMap getRouterRoutingTable()

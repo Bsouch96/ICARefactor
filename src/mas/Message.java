@@ -40,7 +40,7 @@ public class Message
     }
     
     //Addition or deletion of user Constructor
-    Message(String receiver, String newUser, Portal portalConnection, MessageType messageType)
+    Message(String receiver, String newUser, Portal portalConnection, String prevNodeHandle, MessageType messageType)
     {
         if(!messageType.equals(messageType.ADDUSERMESSAGE) && !messageType.equals(messageType.DELETEUSERMESSAGE) || receiver.equals("") || receiver == null)
             throw new IllegalArgumentException();

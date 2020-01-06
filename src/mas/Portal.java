@@ -96,7 +96,7 @@ public class Portal extends MetaAgent
         routingTable.put(agent.userName, agent);
         System.out.println("add");
         //Create new system message to broadcast to network.
-        Message systemMessage = new Message("System", agent.userName, this, MessageType.ADDUSERMESSAGE);
+        Message systemMessage = new Message("System", agent.userName, this, this.userName, MessageType.ADDUSERMESSAGE);
         
         //if(this.portalRouter == null) //Portal is connected to an external Router.
                 //Put onto Socket connection's queue. Change the following command when Sockets are implemented.
