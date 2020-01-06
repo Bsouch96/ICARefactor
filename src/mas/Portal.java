@@ -8,6 +8,7 @@ package mas;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -95,7 +96,7 @@ public class Portal extends MetaAgent
         routingTable.put(agent.userName, agent);
         System.out.println("add");
         //Create new system message to broadcast to network.
-        Message systemMessage = new Message("System", agent, MessageType.ADDUSERMESSAGE);
+        Message systemMessage = new Message("System", agent.userName, this, MessageType.ADDUSERMESSAGE);
         
         //if(this.portalRouter == null) //Portal is connected to an external Router.
                 //Put onto Socket connection's queue. Change the following command when Sockets are implemented.
@@ -110,13 +111,13 @@ public class Portal extends MetaAgent
         
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
         {
-            if(!routingTable.containsKey(message.getNewUser().userName) && portalRouter != null)
+            if(!routingTable.containsKey(message.getNewUser()) && portalRouter != null)
             {
-                System.out.println(this.userName + ": adding " + message.getNewUser().userName + " to routingTable");
-                routingTable.put(message.getNewUser().userName, portalRouter);
+                System.out.println(this.userName + ": adding " + message.getNewUser() + " to routingTable");
+                routingTable.put(message.getNewUser(), portalRouter);
             }
                 
-            else if(routingTable.containsKey(message.getNewUser().userName) && portalRouter != null)
+            else if(routingTable.containsKey(message.getNewUser()) && portalRouter != null)
             {
                 try
                 {
@@ -149,14 +150,17 @@ public class Portal extends MetaAgent
         }
     }
     
-    public void updateLocalPortalTable(TreeMap<String, MetaAgent> map)
+    public void updateLocalPortalTable(Message message)
     {
-        for(Map.Entry routerMap : map.entrySet())
+        if(message == null || message.getRoutingUpdate() == null || message.getRoutingUpdate().equals(""))
+            return;
+
+        String[] newHandles = message.getRoutingUpdate().split("\\|");
+        
+        for (int i = 0; i < newHandles.length-1; i++)
         {
-            if(!routingTable.containsKey((String)routerMap.getKey()))
-            {
-                routingTable.put((String)routerMap.getKey(), portalRouter);
-            }
+            if(!routingTable.containsKey(newHandles[i]))
+                routingTable.put(newHandles[i], portalRouter);
         }
     }
 }

@@ -34,22 +34,42 @@ public class Router extends MetaAgent
     @Override
     public void messageHandler(Message message) 
     {   //if we don't know about the new users portal we will add it to our portal list if it is local.
-        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) && message.getNewUser().portal.getRouter() != null && !localPortals.contains(message.getNewUser().portal))
-            localPortals.add(message.getNewUser().portal);
+        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) && message.getPortalConnection().getRouter() != null && !localPortals.contains(message.getPortalConnection()))
+            localPortals.add(message.getPortalConnection());
         
         //if we have connected portals and we receive a system message then we loop though our portals and send them the message.
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
-        {
+        {   //if the router doesn't have the new user stored along with the correct portal then we add it to our Tree Map.
+            if(!routerRouting.containsKey(message.getNewUser()) && message.getPortalConnection().getRouter() != null)
+            {
+                routerRouting.put(message.getNewUser(), message.getPortalConnection());
+            }
+            /*else
+                networkPortals.put(message.getNewUser().userName, message.getNewUser().portal.getSocket());*/
+            
             if(!localPortals.isEmpty())
             {
                 localPortals.forEach((p) ->
                 {
                     try
                     {
-                        if(!p.equals(message.getNewUser().portal))
+                        if(!p.equals(message.getPortalConnection()))
                             p.put(message);
-                        else
-                            p.updateLocalPortalTable(routerRouting);
+                        else// if(p.equals(message.getPortalConnection()) && )
+                        {
+                            StringBuilder routingHandles = new StringBuilder();
+                            
+                            for(Map.Entry routerMap : routerRouting.entrySet())
+                            {
+                                if(routerMap.getKey().equals(routerRouting.lastKey()))
+                                    routingHandles.append(routerMap.getKey().toString());
+                                else
+                                    routingHandles.append(routerMap.getKey()).append("|");
+                            }
+                            
+                            p.updateLocalPortalTable(new Message(routingHandles.toString(), MessageType.SHAREROUTINGTABLE));
+                        }
+                            
                     }catch(InterruptedException ie)
                     {
                         System.out.println("Error!");
@@ -66,13 +86,6 @@ public class Router extends MetaAgent
                 }
             }*/
             
-            //if the router doesn't have the new user stored along with the correct portal then we add it to our Tree Map.
-            if(!routerRouting.containsKey(message.getNewUser().userName) && message.getNewUser().portal.getRouter() != null)
-            {
-                routerRouting.put(message.getNewUser().userName, message.getNewUser().portal);
-            }
-            /*else
-                networkPortals.put(message.getNewUser().userName, message.getNewUser().portal.getSocket());*/
         }//if our message is for users, we search our Tree Map and forward it accordingly.
         else if(message.getMessageType().equals(MessageType.USERMESSAGE) && routerRouting.containsKey(message.getReceiver()))
         {
@@ -87,5 +100,20 @@ public class Router extends MetaAgent
         }//When sockets are implemented, the else will write the message to the connected socket. Add a seen signature to avoid infinite.
         else
             System.out.println("Router " + this.userName + ": Message receiver doesn't exist!");
+    }
+    
+    public TreeMap getRouterRouting()
+    {
+        return routerRouting;
+    }
+    
+    public TreeMap getNetworkPortals()
+    {
+        return networkPortals;
+    }
+    
+    public ArrayList<Portal> getLocalPortals()
+    {
+        return localPortals;
     }
 }
