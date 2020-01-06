@@ -19,6 +19,7 @@ public class Message
     private final String SENDER;
     private final MetaAgent NEWUSER;
     private final MessageType MESSAGETYPE;
+    private final String ROUTINGUPDATE;
     
     Message(String receiver, String messageBody, String sender, MessageType messageType)
     {
@@ -30,6 +31,7 @@ public class Message
         this.SENDER = sender;
         this.NEWUSER = null;
         this.MESSAGETYPE = messageType;
+        this.ROUTINGUPDATE = null;
     }
     
     Message(String receiver, MetaAgent newUser, MessageType messageType)
@@ -42,6 +44,15 @@ public class Message
         this.SENDER = newUser.portal.userName;
         this.NEWUSER = newUser;
         this.MESSAGETYPE = messageType;
+        this.ROUTINGUPDATE = null;
+    }
+    
+    Message(String receiver, String routingUpdate, MessageType messageType)
+    {
+        if(!messageType.equals(messageType.SHAREROUTINGTABLE) || receiver.equals("") || receiver == null)
+            throw new IllegalArgumentException();
+        
+        
     }
 
     public String getReceiver()
