@@ -7,10 +7,11 @@ package mas;
 
 /**
  *
- * @author Souchys
+ * @author V8178742
  */
 public enum MessageType
 {
     USERMESSAGE,
-    SYSTEMMESSAGE
+    DELETEUSERMESSAGE,
+    ADDUSERMESSAGE,
 }

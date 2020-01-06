@@ -13,12 +13,11 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author t7091808
+ * @author V8178742
  */
 public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements Runnable, Serializable
 {
     protected String userName;
-    volatile static ArrayList<Portal> portalList = new ArrayList<>();
     protected Portal portal;
     
     private Thread t;
@@ -29,13 +28,6 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
         super(100);
         this.userName = userName;
         this.portal = portal;
-        System.out.println(portalList.isEmpty() + " list is empty");
-        if(portal != null && !portalList.contains(portal))
-        {
-            System.out.println(portal.userName + " added to portalList");
-            this.portalList.add(portal);
-        }
-        
         
         this.exit = false;
         startThread();

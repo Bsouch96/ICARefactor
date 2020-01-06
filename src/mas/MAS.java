@@ -186,15 +186,54 @@ public class MAS
         
         Router router = new Router("R1");
         
+        Portal portal1 = new Portal("P1", router);
         
+        Portal portal2 = new Portal("P2", router);
         
+        UserAgent user1 = new UserAgent("A1", portal1);
         
+        UserAgent user2 = new UserAgent("A2", portal1);
         
+        UserAgent user3 = new UserAgent("A3", portal2);
         
+        portal1.addAgent(user1);
         
+        portal1.addAgent(user2);
         
+        portal2.addAgent(user3);
+        Thread.sleep(1000);
+        for(Map.Entry<String, MetaAgent> mapRouting : portal1.routingTable.entrySet())
+        {
+            System.out.println("Portal 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
         
+        for(Map.Entry<String, MetaAgent> mapRouting : portal2.routingTable.entrySet())
+        {
+            System.out.println("Portal 2 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
         
+        for(Map.Entry<String, MetaAgent> mapRouting : router.routerRouting.entrySet())
+        {
+            System.out.println("Router 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
+
+        Thread.sleep(500);
         
+        System.out.println(router.routerRouting.isEmpty());
+        
+        router.localPortals.forEach((p) ->
+        {
+            System.out.println("Portal name: " + p.userName + " Exists in Router local portals");
+        }
+        );
+        
+        for(Map.Entry<String, MetaAgent> mapRouting : router.routerRouting.entrySet())
+        {
+            System.out.println("Router 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
+        
+        user1.SendMessage(new Message("A2", "Hello!", "A1", MessageType.USERMESSAGE));
+        user2.SendMessage(new Message("A3", "Hello A3!", "A2", MessageType.USERMESSAGE));
+        user3.SendMessage(new Message("A1", "Hello A1!", "A3", MessageType.USERMESSAGE));
     }
 }

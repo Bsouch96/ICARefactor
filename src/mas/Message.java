@@ -8,8 +8,8 @@ package mas;
 import java.io.Serializable;
 
 /**
- *
- * @author t7091808
+ * 
+ * @author V8178742
  */
 public class Message
 {
@@ -22,7 +22,7 @@ public class Message
     
     Message(String receiver, String messageBody, String sender, MessageType messageType)
     {
-        if(messageType.equals(messageType.USERMESSAGE) || receiver.equals("") || receiver == null || messageBody == null || sender == null)
+        if(!messageType.equals(messageType.USERMESSAGE) || receiver.equals("") || receiver == null || messageBody == null || sender == null)
             throw new IllegalArgumentException();
         
         this.RECEIVER = receiver;
@@ -34,12 +34,12 @@ public class Message
     
     Message(String receiver, MetaAgent newUser, MessageType messageType)
     {
-        if(messageType.equals(messageType.SYSTEMMESSAGE) || receiver.equals("") || receiver == null)
+        if(!messageType.equals(messageType.ADDUSERMESSAGE) && !messageType.equals(messageType.DELETEUSERMESSAGE) || receiver.equals("") || receiver == null)
             throw new IllegalArgumentException();
         
         this.RECEIVER = receiver;
         this.MESSAGEBODY = null;
-        this.SENDER = "System";
+        this.SENDER = newUser.portal.userName;
         this.NEWUSER = newUser;
         this.MESSAGETYPE = messageType;
     }
@@ -79,8 +79,9 @@ public class Message
     {
         if(MESSAGETYPE.equals(MESSAGETYPE.USERMESSAGE))
             return "Message from: " + SENDER + "\nMessage: " + MESSAGEBODY + "\nTo: " + RECEIVER;
-        else
+        else if(MESSAGETYPE.equals(MESSAGETYPE.ADDUSERMESSAGE))
             return "Message from: " + SENDER + "\nMessage: Adding " + NEWUSER.userName + " to Portal " + NEWUSER.portal.userName + "\nTo: All connected Portals and Routers (RoutingTables should be updated)";
+        else
+            return "Message from: " + SENDER + "\nMessage: Deleting " + NEWUSER.userName + " to Portal " + NEWUSER.portal.userName + "\nTo: All connected Portals and Routers (RoutingTables should be updated)";
     }
-    
 }

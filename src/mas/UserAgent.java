@@ -7,7 +7,7 @@ package mas;
 
 /**
  *
- * @author t7091808
+ * @author V8178742
  */
 public class UserAgent extends MetaAgent
 {

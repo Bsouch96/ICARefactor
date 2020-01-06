@@ -5,45 +5,48 @@
  */
 package mas;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author t7091808
+ * @author V8178742
  */
 public class Portal extends MetaAgent
 {
-    protected volatile TreeMap<String, MetaAgent> routingTable;
+    public volatile TreeMap<String, MetaAgent> routingTable;
+    private Socket socket; //Create Socket here for external connections to Routers.
+    private Router portalRouter; //Local Router connection.
     
-    private Router portalRouter;
-    
-    //Single Portal communication
-    public Portal(String userName)
-    {
-        super(userName, null);
-        this.routingTable = new TreeMap<>();
-        this.portalRouter = null;
-    }
-    
-    //Portal to Portal communication.
-    public Portal(String userName, Portal portal)
-    {
-        super(userName, portal);
-        this.routingTable = new TreeMap<>();
-        this.portalRouter = null;
-        synchronise();
-    }
-    
-    //Portal to Router communication
+    //Portal to local Router communication.
     public Portal(String userName, Router router)
     {
         super(userName, null);
         this.routingTable = new TreeMap<>();
         this.portalRouter = router;
-        synchronise();
+        //socket = null;
+    }
+    
+    //Portal to external Router communication.
+    public Portal(String userName, String ipAddress, int port)
+    {
+        super(userName, null);
+        this.routingTable = new TreeMap<>();
+        this.portalRouter = null;
+        
+        try
+        {
+            socket = new Socket(ipAddress, port);
+        }catch(UnknownHostException uh)
+        {
+            System.out.println("Host Unknown");
+        }catch(IOException io)
+        {
+            System.out.println("IO Exception");
+        }
     }
     
     public boolean setPortal(Portal portal)
@@ -68,69 +71,35 @@ public class Portal extends MetaAgent
         return false;
     }
     
-    public Router getRouter()
+    protected Router getRouter()
     {
         return portalRouter;
     }
     
-    public void addAgent(MetaAgent agent)
+    //Uncomment when sockets are implemented.
+    public Socket getSocket()
     {
-        routingTable.put(agent.userName, agent);
-        System.out.println("add");
-        
-        if(portalRouter != null) //If the network has an existing Router, update it.
-        {
-            //Updates router
-            portalRouter.routing.put(agent.userName, this);
-            
-            //Update all other Portals here...
-            for(Portal pList : portalList)
-            {
-                if(pList.equals(this))
-                    this.routingTable.put(agent.userName, agent);
-                else
-                    pList.routingTable.put(agent.userName, portalRouter);
-            }
-        }
-        else if(this.portal != null) //If the network has no Router but a connected Portal.
-        {
-            //Updates connected Portal's routing table.
-            portal.routingTable.put(agent.userName, this);
-            System.out.println("Adding agent");
-        }
-        // if this.portal != null notify that portal
+        return socket;
     }
     
-    private void synchronise() //Only called when there is more than 1 Portal.
+    public TreeMap getPortalRoutingTable()
     {
-        if(this.portal != null) //Null Pointer Exception occurs without this when adding a third Portal when a Router exists.
-        {
-            if(this.portal.portalRouter == null && this.portal.portal == null)
-                this.portal.portal = this; //Connects original Portal to newly created Portal.
-        }
+        return routingTable;
+    }
+    
+    public void addAgent(MetaAgent agent)
+    {
+        if(agent == null)
+            return;
         
-        if(this.portalRouter != null) //Update newly added Portal with connection to router to find other UserAgents.
-        {                             // Only works for Portals added without any current UserAgents.
-            for(Map.Entry<String, MetaAgent> mapRouting : portalRouter.routing.entrySet())
-            {
-                this.routingTable.put(mapRouting.getKey(), portalRouter);
-                /*pList.routingTable.put(name, this);
-                portalRouter.routing.put(name, this);*/
-            }
-        }
-        else if(this.portal != null) //Only update connected Portal
-        {
-            for(Map.Entry<String, MetaAgent> mapRouting : portal.routingTable.entrySet())
-            {
-                /*for(Portal pList : portalList)
-                {
-                    pList.routingTable.put(agent.userName, this);
-                }*/
-
-                if(!routingTable.containsKey(mapRouting.getKey()))
-                    routingTable.put(mapRouting.getKey(), this.portal);
-            }
-        }
+        routingTable.put(agent.userName, agent);
+        System.out.println("add");
+        //Create new system message to broadcast to network.
+        Message systemMessage = new Message("System", agent, MessageType.ADDUSERMESSAGE);
+        
+        //if(this.portalRouter == null) //Portal is connected to an external Router.
+                //Put onto Socket connection's queue. Change the following command when Sockets are implemented.
+        messageHandler(systemMessage);
     }
     
     @Override
@@ -139,21 +108,55 @@ public class Portal extends MetaAgent
         //System.out.println("Portal Contains Key: " + routingTable.containsKey(message.getReceiver()));
         System.out.println("Passed: " + this.userName);
         
-        if(message.getReceiver().equals(this.userName))
+        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
         {
-            System.out.println("Message direct to portal: " + message.toString());
+            if(!routingTable.containsKey(message.getNewUser().userName) && portalRouter != null)
+            {
+                System.out.println(this.userName + ": adding " + message.getNewUser().userName + " to routingTable");
+                routingTable.put(message.getNewUser().userName, portalRouter);
+            }
+                
+            else if(routingTable.containsKey(message.getNewUser().userName) && portalRouter != null)
+            {
+                try
+                {
+                    portalRouter.put(message);
+                }catch(InterruptedException ie)
+                {
+                    System.out.println("Error!");
+                }
+            }
+            //Implement else when Sockets are implemented.
+            /*else
+                routingTable.put(message.getNewUser().userName, socket);*/
         }
-        else if(routingTable.containsKey(message.getReceiver()))
+        else if(message.getMessageType().equals(MessageType.USERMESSAGE))
         {
-            try
+            if(message.getReceiver().equals(this.userName))
+                System.out.println("Message direct to portal: " + message.toString());
+            else if(routingTable.containsKey(message.getReceiver()))
+            {   
+                try
+                {
+                    routingTable.get(message.getReceiver()).put(message);
+                }catch(InterruptedException ie)
+                {
+                    System.out.println("Error!");
+                }
+            }
+            else
+                System.out.println(this.userName + ": " + "\"" + message.getReceiver() + "\"" + " could not be found.");
+        }
+    }
+    
+    public void updateLocalPortalTable(TreeMap<String, MetaAgent> map)
+    {
+        for(Map.Entry routerMap : map.entrySet())
+        {
+            if(!routingTable.containsKey((String)routerMap.getKey()))
             {
-                routingTable.get(message.getReceiver()).put(message);
-            }catch (InterruptedException ex)
-            {
-                Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                routingTable.put((String)routerMap.getKey(), portalRouter);
             }
         }
-        else
-            System.out.println("Portal: " + this.userName + " - No idea who this is for!");
     }
 }
