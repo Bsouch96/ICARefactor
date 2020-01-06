@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class Message
 {
     private final static long serialVersionUID = 1L;
-    private final String RECEIVER; //Will be UserAgent with GUI
+    private final String RECEIVER;
     private final String MESSAGEBODY;
     private final String SENDER;
     private final String NEWUSER;
@@ -26,8 +26,8 @@ public class Message
     //UserMessage Constructor
     Message(String receiver, String messageBody, String sender, MessageType messageType)
     {
-        if(!messageType.equals(messageType.USERMESSAGE) || receiver.equals("") || receiver == null || messageBody == null || sender == null)
-            throw new IllegalArgumentException();
+        if(messageType == null || !messageType.equals(messageType.USERMESSAGE) || receiver == null || receiver.isEmpty() || messageBody == null || sender == null)
+            throw new IllegalArgumentException("Please check your new User Message parameters.");
         
         this.RECEIVER = receiver;
         this.MESSAGEBODY = messageBody;
@@ -42,12 +42,12 @@ public class Message
     //Addition or deletion of user Constructor
     Message(String receiver, String newUser, Portal portalConnection, String prevNodeHandle, MessageType messageType)
     {
-        if(!messageType.equals(messageType.ADDUSERMESSAGE) && !messageType.equals(messageType.DELETEUSERMESSAGE) || receiver.equals("") || receiver == null)
-            throw new IllegalArgumentException();
+        if(messageType == null || portalConnection == null || !messageType.equals(messageType.ADDUSERMESSAGE) && !messageType.equals(messageType.DELETEUSERMESSAGE) || prevNodeHandle == null || prevNodeHandle.isEmpty() || receiver == null || receiver.isEmpty() || newUser == null || newUser.isEmpty())
+            throw new IllegalArgumentException("Please check your new Add/Delete user System Message parameters.");
         
         this.RECEIVER = receiver;
         this.MESSAGEBODY = null;
-        this.SENDER = null;
+        this.SENDER = "System";
         this.NEWUSER = newUser;
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = null;
@@ -58,8 +58,8 @@ public class Message
     //Share Router routing table Constructor
     Message(String routingUpdate, MessageType messageType)
     {
-        if(!messageType.equals(messageType.SHAREROUTINGTABLE) || routingUpdate.equals("") || routingUpdate == null)
-            throw new IllegalArgumentException();
+        if(messageType == null || !messageType.equals(messageType.SHAREROUTINGTABLE) || routingUpdate == null || routingUpdate.isEmpty())
+            throw new IllegalArgumentException("Please check your new Share Router Message parameters.");
         
         this.RECEIVER = null;
         this.MESSAGEBODY = null;
@@ -122,10 +122,10 @@ public class Message
         if(MESSAGETYPE.equals(MESSAGETYPE.USERMESSAGE))
             return "Message from: " + SENDER + "\nMessage: " + MESSAGEBODY + "\nTo: " + RECEIVER;
         else if(MESSAGETYPE.equals(MESSAGETYPE.ADDUSERMESSAGE))
-            return "Message from: " + SENDER + "\nMessage: Adding " + NEWUSER + "\nTo: All connected Portals and Routers (RoutingTables should be updated)";
+            return "Message from: " + SENDER + "\nMessage: Adding " + NEWUSER + "\nTo: All connected Portals and Routers";
         else if(MESSAGETYPE.equals(MESSAGETYPE.DELETEUSERMESSAGE))
-            return "Message from: " + SENDER + "\nMessage: Deleting " + NEWUSER + "\nTo: All connected Portals and Routers (RoutingTables should be updated)";
+            return "Message from: " + SENDER + "\nMessage: Deleting " + NEWUSER + "\nTo: All connected Portals and Routers";
         else
-            return "Message from: Router" + "\nMessage: Add handles " + ROUTINGUPDATE + " to your routing table" + "\nTo: all connected Portals";
+            return "Message from: Router" + "\nMessage: Add handles " + ROUTINGUPDATE + " to your routing table" + "\nTo: All connected Portals";
     }
 }

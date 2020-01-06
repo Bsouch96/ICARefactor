@@ -12,6 +12,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -23,7 +25,9 @@ public class Router extends MetaAgent
     public volatile TreeMap<String, MetaAgent> routerRouting;
     private volatile TreeMap<String, Socket> networkPortals; //Used when local users are added.
     public volatile ArrayList<Portal> localPortals;
-    ServerSocket serverSocket;
+    Thread acceptThread;
+    private ServerSocket serverSocket;
+    private Thread socketThread;
     
     public Router(String userName)
     {
@@ -31,6 +35,7 @@ public class Router extends MetaAgent
         routerRouting = new TreeMap<>();
         networkPortals = new TreeMap<>();
         localPortals = new ArrayList<>();
+        
         try
         {
             serverSocket = new ServerSocket();
@@ -46,6 +51,29 @@ public class Router extends MetaAgent
     public TreeMap getRouterRoutingTable()
     {
         return routerRouting;
+    }
+    
+    public void waitForConnection()
+    {
+        /*acceptThread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                for(;;)
+                {
+                    try {
+                        Socket incoming = serverSocket.accept();
+                        incoming.get
+                        networkPortals.put(userName, incoming);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                }
+            }
+        });
+        acceptThread.start();*/
     }
     
     @Override
@@ -133,4 +161,6 @@ public class Router extends MetaAgent
     {
         return localPortals;
     }
+    
+    
 }

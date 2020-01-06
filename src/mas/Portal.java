@@ -6,10 +6,9 @@
 package mas;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -19,8 +18,13 @@ import java.util.TreeMap;
 public class Portal extends MetaAgent
 {
     public volatile TreeMap<String, MetaAgent> routingTable;
-    private Socket socket; //Create Socket here for external connections to Routers.
+    private Socket portalSocket; //Create Socket here for external connections to Routers.
     private Router portalRouter; //Local Router connection.
+    private String ipAddress;
+    private int port;
+    private Thread connectionThread;
+    private InetAddress address;
+    
     
     //Portal to local Router communication.
     public Portal(String userName, Router router)
@@ -37,17 +41,10 @@ public class Portal extends MetaAgent
         super(userName, null);
         this.routingTable = new TreeMap<>();
         this.portalRouter = null;
+        this.ipAddress = ipAddress;
+        this.port = port;
         
-        try
-        {
-            socket = new Socket(ipAddress, port);
-        }catch(UnknownHostException uh)
-        {
-            System.out.println("Host Unknown");
-        }catch(IOException io)
-        {
-            System.out.println("IO Exception");
-        }
+        connectTo();
     }
     
     public boolean setPortal(Portal portal)
@@ -80,7 +77,17 @@ public class Portal extends MetaAgent
     //Uncomment when sockets are implemented.
     public Socket getSocket()
     {
-        return socket;
+        return portalSocket;
+    }
+    
+    public String getIpAddress()
+    {
+        return ipAddress;
+    }
+    
+    public int getPort()
+    {
+        return port;
     }
     
     public TreeMap getPortalRoutingTable()
@@ -162,5 +169,28 @@ public class Portal extends MetaAgent
             if(!routingTable.containsKey(newHandles[i]))
                 routingTable.put(newHandles[i], portalRouter);
         }
+    }
+    
+    public void connectTo()
+    {
+        /*connectionThread = new Thread(new Runnable()
+        {
+            @Override
+            public void Run() throws IOException
+            {
+                try
+                {
+                    address = InetAddress.getByName(ipAddress);
+                    portalSocket = new Socket(address, port);
+                    portalSocket.bind(address);
+                }catch(UnknownHostException uh)
+                {
+                    
+
+                }
+                
+            }
+        });
+        connectionThread.start();*/
     }
 }

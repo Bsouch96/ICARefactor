@@ -25,6 +25,12 @@ public class UserAgent extends MetaAgent
     
     public void SendMessage(Message message)
     {
-        portal.add(message);
+        try
+        {
+            portal.put(message);
+        }catch(InterruptedException ie)
+        {
+            System.out.println("Error!");
+        }
     }
 }
