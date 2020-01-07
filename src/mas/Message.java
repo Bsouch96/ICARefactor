@@ -19,7 +19,7 @@ public class Message
     private final MessageType MESSAGETYPE;
     private final String ROUTINGUPDATE;
     private final Portal PORTALCONNECTION;
-    private String prevNodeHandle;
+    private String prevNodeSignature;
     
     //UserMessage Constructor
     Message(String receiver, String messageBody, String sender, MessageType messageType)
@@ -34,7 +34,7 @@ public class Message
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = null;
         this.PORTALCONNECTION = null;
-        this.prevNodeHandle = null;
+        this.prevNodeSignature = null;
     }
     
     //Addition or deletion of user Constructor
@@ -50,7 +50,7 @@ public class Message
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = null;
         this.PORTALCONNECTION = portalConnection;
-        this.prevNodeHandle = prevNodeHandle;
+        this.prevNodeSignature = prevNodeHandle;
     }
     
     //Share Router routing table Constructor
@@ -66,9 +66,24 @@ public class Message
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = routingUpdate;
         this.PORTALCONNECTION = null;
-        this.prevNodeHandle = null;
+        this.prevNodeSignature = null;
     }
 
+    Message(String sender, String msgBody, MessageType messageType)
+    {
+        if(messageType == null || !messageType.equals(MessageType.HELLO) || !messageType.equals(MessageType.HELLOACK) || sender == null || sender.isEmpty())
+            throw new IllegalArgumentException("Please ensure your Hello and Helloack message parameters are appropriate.");
+        
+        this.SENDER = sender;
+        this.MESSAGEBODY = msgBody;
+        this.MESSAGETYPE = messageType;
+        this.RECEIVER = null;
+        this.USER = null;
+        this.ROUTINGUPDATE = null;
+        this.PORTALCONNECTION = null;
+        this.prevNodeSignature = null;
+    }
+    
     public String getReceiver()
     {
         return RECEIVER;
@@ -109,9 +124,17 @@ public class Message
         return PORTALCONNECTION;
     }
     
-    public String getPrevNodeHandle()
+    public String getPrevNodeSignature()
     {
-        return prevNodeHandle;
+        return prevNodeSignature;
+    }
+    
+    public void setPrevNodeSignature(String prevNode)
+    {
+        if(prevNode == null || prevNode.isEmpty())
+            return;
+        
+        this.prevNodeSignature = prevNode;
     }
     
     @Override
@@ -123,7 +146,9 @@ public class Message
             return "Message from: " + SENDER + "\nMessage: Adding " + USER + "\nTo: All connected Portals and Routers";
         else if(MESSAGETYPE.equals(MESSAGETYPE.DELETEUSERMESSAGE))
             return "Message from: " + SENDER + "\nMessage: Deleting " + USER + "\nTo: All connected Portals and Routers";
+        else if(MESSAGETYPE.equals(MESSAGETYPE.HELLO))
+            return "Message from: " + SENDER + "\nMessage: Hello " + "\nTo: Router";
         else
-            return "Message from: Router" + "\nMessage: Add handles " + ROUTINGUPDATE + " to your routing table" + "\nTo: All connected Portals";
+            return "Message from: " + SENDER + "\nMessage: " + MESSAGEBODY + "\nTo: Portal";
     }
 }

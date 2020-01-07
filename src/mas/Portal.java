@@ -6,10 +6,16 @@
 package mas;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,7 +29,12 @@ public class Portal extends MetaAgent
     private String ipAddress;
     private int port;
     private Thread connectionThread;
+    private Thread readFromSocketThread;
     private InetAddress address;
+    private OutputStream outputStream;
+    private ObjectOutputStream objectOutputStream;
+    private InputStream inputStream;
+    private ObjectInputStream objectInputStream;
     
     
     //Portal to local Router communication.
@@ -103,83 +114,124 @@ public class Portal extends MetaAgent
         return routingTable;
     }
     
-    public void addAgent(MetaAgent agent)
+    public synchronized void addAgent(MetaAgent agent)
     {
         if(agent == null)
             return;
         
         routingTable.put(agent.userName, agent);
         System.out.println("add");
-        //Create new system message to broadcast to network.
-        Message systemMessage = new Message("System", agent.userName, this, this.userName, MessageType.ADDUSERMESSAGE);
         
-        //if(this.portalRouter == null) //Portal is connected to an external Router.
-                //Put onto Socket connection's queue. Change the following command when Sockets are implemented.
-        messageHandler(systemMessage);
+        //Create new system message to broadcast to network.
+        messageHandler(new Message("System", agent.userName, this, this.userName, MessageType.ADDUSERMESSAGE));
     }
     
     @Override
-    public void messageHandler(Message message)
+    public synchronized void messageHandler(Message message)
     {
         //System.out.println("Portal Contains Key: " + routingTable.containsKey(message.getReceiver()));
         System.out.println("Passed: " + this.userName);
         
-        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
+        switch (message.getMessageType())
         {
-            if(!routingTable.containsKey(message.getUser()) && portalRouter != null)
-            {
-                System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
-                routingTable.put(message.getUser(), portalRouter);
-            }
-                
-            else if(routingTable.containsKey(message.getUser()) && portalRouter != null)
-            {
-                try
+            case ADDUSERMESSAGE:
+                if(!routingTable.containsKey(message.getUser()) && portalRouter != null)
                 {
-                    portalRouter.put(message);
-                }catch(InterruptedException ie)
-                {
-                    System.out.println("Error!");
+                    System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
+                    routingTable.put(message.getUser(), portalRouter);
                 }
-            }
-            //Implement else when Sockets are implemented.
-            /*else
-                routingTable.put(message.getNewUser().userName, socket);*/
-        }
-        else if(message.getMessageType().equals(MessageType.USERMESSAGE))
-        {
-            if(message.getReceiver().equals(this.userName))
-                System.out.println("Message direct to portal: " + message.toString());
-            else if(routingTable.containsKey(message.getReceiver()))
-            {   
-                try
+                else if(routingTable.containsKey(message.getUser()) && portalRouter != null)
                 {
-                    routingTable.get(message.getReceiver()).put(message);
-                }catch(InterruptedException ie)
-                {
-                    System.out.println("Error!");
+                    try
+                    {
+                        portalRouter.put(message);
+                    }catch(InterruptedException ie)
+                    {
+                        System.out.println("Error!");
+                    }
                 }
-            }
-            else
-                System.out.println(this.userName + ": " + "\"" + message.getReceiver() + "\"" + " could not be found.");
-        }
-        else if(message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
-        {
-            if(routingTable.containsKey(message.getUser()))
-            {
-                routingTable.remove(message.getUser());
-                try
+                //Implement else when Sockets are implemented.
+                else if(!routingTable.containsKey(message.getUser()) && portalRouter == null)
                 {
-                    portalRouter.put(message);
-                }catch(InterruptedException ie)
-                {
-                    System.out.println("Error!");
+                    writeToSocket(message);
                 }
-            }
+                else if(routingTable.containsKey(message.getUser()) && portalRouter == null)
+                {
+                    System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
+                    routingTable.put(message.getUser(), portalRouter);
+                }
+                break;
+            case USERMESSAGE:
+                if(routingTable.containsKey(message.getReceiver()) && routingTable.get(message.getReceiver()).equals(portalRouter))
+                {
+                    try
+                    {
+                        routingTable.get(message.getReceiver()).put(message);
+                    }catch(InterruptedException ie)
+                    {
+                        System.out.println("Error!");
+                    }
+                }
+                else if(routingTable.containsKey(message.getReceiver()) && routingTable.get(message.getReceiver()).equals(portalSocket))
+                    writeToSocket(message);
+                else if(routingTable.containsKey(message.getReceiver()))
+                {
+                    try
+                    {
+                        routingTable.get(message.getReceiver()).put(message);
+                    }catch(InterruptedException ie)
+                    {
+                        System.out.println("Error!");
+                    }
+                }
+                else
+                    System.out.println(this.userName + ": " + "\"" + message.getReceiver() + "\"" + " could not be found.");
+                break;
+            case DELETEUSERMESSAGE:
+                if(routingTable.containsKey(message.getUser()))
+                {
+                    if(portalRouter != null)
+                    {
+                        try
+                        {
+                            portalRouter.put(message);
+                        }catch(InterruptedException ie)
+                        {
+                            System.out.println("Error!");
+                        }
+                    }
+                    else if(portalSocket != null)
+                        writeToSocket(message);
+                    
+                    routingTable.remove(message.getUser());
+                }
+                break;
+            case SHAREROUTINGTABLE:
+                updateLocalPortalTable(message);
+                break;
+            default:
+                break;
         }
     }
     
-    public void updateLocalPortalTable(Message message)
+    public synchronized void writeToSocket(Message message)
+    {
+        if(message == null)
+            return;
+        
+        try
+        {
+            message.setPrevNodeSignature(this.userName);
+            outputStream = portalSocket.getOutputStream();
+            objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(message);
+        }catch (IOException ex)
+        {
+            Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public synchronized void updateLocalPortalTable(Message message)
     {
         if(message == null || message.getRoutingUpdate() == null || message.getRoutingUpdate().equals(""))
             return;
@@ -193,13 +245,14 @@ public class Portal extends MetaAgent
         }
     }
     
-    public void removeAgent(UserAgent agent)
+    public synchronized void removeAgent(UserAgent agent)
     {//if our map contains the username and the user is local to this portal, commence delete.
         if(routingTable.containsKey(agent.userName) && routingTable.get(agent.userName).equals(agent))
         {
+            System.out.println(this.userName + ": " + agent.userName + " deleted. Sending message...");
             messageHandler(new Message("System", agent.userName, this, this.userName, MessageType.DELETEUSERMESSAGE));
             agent.portal = null;
-            System.out.println(this.userName + ": " + agent.userName + " deleted. Sending message...");
+            
         }
         else
             System.out.println(this.userName + ": Cannot delete a user that is not local to me.");
@@ -207,25 +260,54 @@ public class Portal extends MetaAgent
     
     public void connectTo()
     {
-        /*connectionThread = new Thread(new Runnable()
+        connectionThread = new Thread(new Runnable()
         {
             @Override
-            public void Run() throws IOException
+            public void run()
             {
                 try
                 {
                     address = InetAddress.getByName(ipAddress);
                     portalSocket = new Socket(address, port);
-                    portalSocket.bind(address);
+                    OutputStream outputStream = portalSocket.getOutputStream();
+                    // create an object output stream from the output stream so we can send an object through it
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                    InputStream inputStream = portalSocket.getInputStream();
+                    // create a DataInputStream so we can read data from it.
+                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                    
+                    objectOutputStream.writeObject(new Message(Portal.this.userName, "Hello!", MessageType.HELLO));
+                    
+                    int timeout = 0;
+                    
+                    while(inputStream.available() == 0)
+                    {
+                        //increase timeout to some point and close if times out
+                        timeout++;
+
+                        if(timeout > 10000000)
+                        {
+                            portalSocket.close();
+                            continue;
+                        }
+                    }
+                    
+                    Message extMessage = (Message)objectInputStream.readObject();
+                    if(extMessage.getMessageType().equals(MessageType.HELLOACK))
+                        readFromSocket();
                 }catch(UnknownHostException uh)
                 {
-                    
-
+                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, uh);
+                }catch(IOException io)
+                {
+                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, io);
+                } catch (ClassNotFoundException ex)
+                {
+                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
             }
         });
-        connectionThread.start();*/
+        connectionThread.start();
     }
     
     //Should match 0.0.0.0 - 255.255.255.255
@@ -236,5 +318,30 @@ public class Portal extends MetaAgent
                         "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
                         "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\b");
             
+    }
+    
+    public void readFromSocket()
+    {
+        readFromSocketThread = new Thread(new Runnable()
+        {   @Override
+            public void run()
+            {
+                try
+                {
+                    inputStream = portalSocket.getInputStream();
+                    objectInputStream = new ObjectInputStream(inputStream);
+                    Message extMessage = (Message) objectInputStream.readObject();
+                    messageHandler(extMessage);
+                }catch (IOException ex)
+                {
+                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex)
+                {
+                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        readFromSocketThread.start();
     }
 }

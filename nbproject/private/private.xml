@@ -4,7 +4,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/src/mas/MAS.java</file>
-            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/src/mas/Router.java</file>
+            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/src/mas/MetaAgent.java</file>
+            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/src/mas/UserAgent.java</file>
+            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/test/mas/PortalTest.java</file>
+            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/test/mas/UserAgentTest.java</file>
+            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/src/mas/Portal.java</file>
+            <file>file:/C:/Users/Souchys/Desktop/Uni/Year%202/Advanced%20Java%20Programming/ICA%20Refactor/ICARefactor/test/mas/MessageTest.java</file>
         </group>
     </open-files>
 </project-private>

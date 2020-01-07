@@ -241,7 +241,7 @@ public class MAS
         portal1.removeAgent(user3);
         portal2.removeAgent(user3);
         
-        Thread.sleep(500);
+        Thread.sleep(2000);
         
         for(Map.Entry<String, MetaAgent> mapRouting : portal1.routingTable.entrySet())
         {
