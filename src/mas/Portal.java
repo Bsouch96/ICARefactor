@@ -118,13 +118,13 @@ public class Portal extends MetaAgent
         
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
         {
-            if(!routingTable.containsKey(message.getNewUser()) && portalRouter != null)
+            if(!routingTable.containsKey(message.getUser()) && portalRouter != null)
             {
-                System.out.println(this.userName + ": adding " + message.getNewUser() + " to routingTable");
-                routingTable.put(message.getNewUser(), portalRouter);
+                System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
+                routingTable.put(message.getUser(), portalRouter);
             }
                 
-            else if(routingTable.containsKey(message.getNewUser()) && portalRouter != null)
+            else if(routingTable.containsKey(message.getUser()) && portalRouter != null)
             {
                 try
                 {
@@ -155,6 +155,20 @@ public class Portal extends MetaAgent
             else
                 System.out.println(this.userName + ": " + "\"" + message.getReceiver() + "\"" + " could not be found.");
         }
+        else if(message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
+        {
+            if(routingTable.containsKey(message.getUser()))
+            {
+                routingTable.remove(message.getUser());
+                try
+                {
+                    portalRouter.put(message);
+                }catch(InterruptedException ie)
+                {
+                    System.out.println("Error!");
+                }
+            }
+        }
     }
     
     public void updateLocalPortalTable(Message message)
@@ -169,6 +183,18 @@ public class Portal extends MetaAgent
             if(!routingTable.containsKey(newHandles[i]))
                 routingTable.put(newHandles[i], portalRouter);
         }
+    }
+    
+    public void removeAgent(UserAgent agent)
+    {//if our map contains the username and the user is local to this portal, commence delete.
+        if(routingTable.containsKey(agent.userName) && routingTable.get(agent.userName).equals(agent))
+        {
+            messageHandler(new Message("System", agent.userName, this, this.userName, MessageType.DELETEUSERMESSAGE));
+            agent.portal = null;
+            System.out.println(this.userName + ": " + agent.userName + " deleted. Sending message...");
+        }
+        else
+            System.out.println(this.userName + ": Cannot delete a user that is not local to me.");
     }
     
     public void connectTo()

@@ -5,8 +5,6 @@
  */
 package mas;
 
-import java.io.Serializable;
-
 /**
  * 
  * @author V8178742
@@ -17,7 +15,7 @@ public class Message
     private final String RECEIVER;
     private final String MESSAGEBODY;
     private final String SENDER;
-    private final String NEWUSER;
+    private final String USER;
     private final MessageType MESSAGETYPE;
     private final String ROUTINGUPDATE;
     private final Portal PORTALCONNECTION;
@@ -32,7 +30,7 @@ public class Message
         this.RECEIVER = receiver;
         this.MESSAGEBODY = messageBody;
         this.SENDER = sender;
-        this.NEWUSER = null;
+        this.USER = null;
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = null;
         this.PORTALCONNECTION = null;
@@ -40,15 +38,15 @@ public class Message
     }
     
     //Addition or deletion of user Constructor
-    Message(String receiver, String newUser, Portal portalConnection, String prevNodeHandle, MessageType messageType)
+    Message(String receiver, String user, Portal portalConnection, String prevNodeHandle, MessageType messageType)
     {
-        if(messageType == null || portalConnection == null || !messageType.equals(messageType.ADDUSERMESSAGE) && !messageType.equals(messageType.DELETEUSERMESSAGE) || prevNodeHandle == null || prevNodeHandle.isEmpty() || receiver == null || receiver.isEmpty() || newUser == null || newUser.isEmpty())
+        if(messageType == null || portalConnection == null || !messageType.equals(messageType.ADDUSERMESSAGE) && !messageType.equals(messageType.DELETEUSERMESSAGE) || prevNodeHandle == null || prevNodeHandle.isEmpty() || receiver == null || receiver.isEmpty() || user == null || user.isEmpty())
             throw new IllegalArgumentException("Please check your new Add/Delete user System Message parameters.");
         
         this.RECEIVER = receiver;
         this.MESSAGEBODY = null;
         this.SENDER = "System";
-        this.NEWUSER = newUser;
+        this.USER = user;
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = null;
         this.PORTALCONNECTION = portalConnection;
@@ -64,7 +62,7 @@ public class Message
         this.RECEIVER = null;
         this.MESSAGEBODY = null;
         this.SENDER = "Router";
-        this.NEWUSER = null;
+        this.USER = null;
         this.MESSAGETYPE = messageType;
         this.ROUTINGUPDATE = routingUpdate;
         this.PORTALCONNECTION = null;
@@ -91,9 +89,9 @@ public class Message
         return this.serialVersionUID;
     }
     
-    public String getNewUser()
+    public String getUser()
     {
-        return NEWUSER;
+        return USER;
     }
     
     public MessageType getMessageType()
@@ -122,9 +120,9 @@ public class Message
         if(MESSAGETYPE.equals(MESSAGETYPE.USERMESSAGE))
             return "Message from: " + SENDER + "\nMessage: " + MESSAGEBODY + "\nTo: " + RECEIVER;
         else if(MESSAGETYPE.equals(MESSAGETYPE.ADDUSERMESSAGE))
-            return "Message from: " + SENDER + "\nMessage: Adding " + NEWUSER + "\nTo: All connected Portals and Routers";
+            return "Message from: " + SENDER + "\nMessage: Adding " + USER + "\nTo: All connected Portals and Routers";
         else if(MESSAGETYPE.equals(MESSAGETYPE.DELETEUSERMESSAGE))
-            return "Message from: " + SENDER + "\nMessage: Deleting " + NEWUSER + "\nTo: All connected Portals and Routers";
+            return "Message from: " + SENDER + "\nMessage: Deleting " + USER + "\nTo: All connected Portals and Routers";
         else
             return "Message from: Router" + "\nMessage: Add handles " + ROUTINGUPDATE + " to your routing table" + "\nTo: All connected Portals";
     }

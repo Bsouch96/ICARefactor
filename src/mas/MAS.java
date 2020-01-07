@@ -232,8 +232,33 @@ public class MAS
             System.out.println("Router 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
         }
         
-        user1.SendMessage(new Message("A2", "Hello!", "A1", MessageType.USERMESSAGE));
+        /*user1.SendMessage(new Message("A2", "Hello!", "A1", MessageType.USERMESSAGE));
         user2.SendMessage(new Message("A3", "Hello A3!", "A2", MessageType.USERMESSAGE));
-        user3.SendMessage(new Message("A1", "Hello A1!", "A3", MessageType.USERMESSAGE));
+        user3.SendMessage(new Message("A1", "Hello A1!", "A3", MessageType.USERMESSAGE));*/
+        
+        System.out.println("\n---------------------------------- Deleting Users Tests -----------------------------\n");
+        
+        portal1.removeAgent(user3);
+        portal2.removeAgent(user3);
+        
+        Thread.sleep(500);
+        
+        for(Map.Entry<String, MetaAgent> mapRouting : portal1.routingTable.entrySet())
+        {
+            System.out.println("Portal 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
+        
+        for(Map.Entry<String, MetaAgent> mapRouting : portal2.routingTable.entrySet())
+        {
+            System.out.println("Portal 2 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
+        
+        for(Map.Entry<String, MetaAgent> mapRouting : router.routerRouting.entrySet())
+        {
+            System.out.println("Router 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
+        }
+        
+        //Throws null pointer exception because user3's Portal has been deleted. User3 would be deleted if main() wasn't referencing it.
+        //user3.SendMessage(new Message("A1", "Hello I should be deleted", "A3", MessageType.USERMESSAGE));
     }
 }

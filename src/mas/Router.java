@@ -12,8 +12,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -85,10 +83,10 @@ public class Router extends MetaAgent
         //if we have connected portals and we receive a system message then we loop though our portals and send them the message.
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
         {   //if the router doesn't have the new user stored along with the correct portal then we add it to our Tree Map.
-            if(!routerRouting.containsKey(message.getNewUser()) && message.getPortalConnection().getRouter() != null)
-            {
-                routerRouting.put(message.getNewUser(), message.getPortalConnection());
-            }
+            if(!routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
+                routerRouting.put(message.getUser(), message.getPortalConnection());
+            else if(routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
+                routerRouting.remove(message.getUser());
             /*else
                 networkPortals.put(message.getNewUser().userName, message.getNewUser().portal.getSocket());*/
             
