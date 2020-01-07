@@ -11,6 +11,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 
 /**
  *
@@ -18,49 +20,63 @@ import static org.junit.Assert.*;
  */
 public class UserAgentTest {
     
-    public UserAgentTest() {
+    public UserAgentTest()
+    {
+        
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
+    @Rule public ExpectedException thrown = ExpectedException.none();
     
-    @AfterClass
-    public static void tearDownClass() {
-    }
+    //testUserMsgConstArgsReceiver
     
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
     /**
-     * Test of messageHandler method, of class UserAgent.
+     * Testing the IllegalArgumentException thrown when creating a UserAgent with an empty userName.
+     * @since #1.0
+     * @exception IllegalArgumentException
+     * @see IllegalArgumentException
      */
     @Test
-    public void testMessageHandler() {
-        System.out.println("messageHandler");
-        Message message = null;
-        UserAgent instance = null;
-        instance.messageHandler(message);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of SendMessage method, of class UserAgent.
-     */
-    @Test
-    public void testSendMessage() {
-        System.out.println("SendMessage");
-        Message message = null;
-        UserAgent instance = null;
-        instance.SendMessage(message);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testUserAgentConstArgsUserNameEmpty()
+    {
+        System.out.println("Testing UserAgent Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure your UserAgent username is not empty or null and your Portal is not null");
+        Router router = new Router("R1");
+        Portal portal = new Portal("P1", router);
+        UserAgent agent1 = new UserAgent("", portal);
     }
     
+    /**
+     * Testing the IllegalArgumentException thrown when creating a UserAgent with a null userName.
+     * @since #1.0
+     * @exception IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testUserAgentConstArgsUserNameNull()
+    {
+        System.out.println("Testing UserAgent Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure your UserAgent username is not empty or null and your Portal is not null");
+        Router router = new Router("R1");
+        Portal portal = new Portal("P1", router);
+        UserAgent agent1 = new UserAgent(null, portal);
+    }
+    
+    /**
+     * Testing the IllegalArgumentException thrown when creating a UserAgent with a null Portal.
+     * @since #1.0
+     * @exception IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testUserAgentConstArgsPortalNull()
+    {
+        System.out.println("Testing UserAgent Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure your UserAgent username is not empty or null and your Portal is not null");
+        Router router = new Router("R1");
+        Portal portal = new Portal("P1", router);
+        UserAgent agent1 = new UserAgent("Ben", null);
+    }
 }

@@ -29,7 +29,7 @@ public class Router extends MetaAgent
     
     public Router(String userName)
     {
-        super(userName, null);
+        super(userName);
         routerRouting = new TreeMap<>();
         networkPortals = new TreeMap<>();
         localPortals = new ArrayList<>();

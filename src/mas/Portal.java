@@ -29,7 +29,7 @@ public class Portal extends MetaAgent
     //Portal to local Router communication.
     public Portal(String userName, Router router)
     {
-        super(userName, null);
+        super(userName);
         this.routingTable = new TreeMap<>();
         this.portalRouter = router;
         //socket = null;
@@ -38,7 +38,7 @@ public class Portal extends MetaAgent
     //Portal to external Router communication.
     public Portal(String userName, String ipAddress, int port)
     {
-        super(userName, null);
+        super(userName);
         this.routingTable = new TreeMap<>();
         this.portalRouter = null;
         this.ipAddress = ipAddress;

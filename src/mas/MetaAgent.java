@@ -23,15 +23,36 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
     private Thread t;
     private boolean exit;
 
+    //UserAgents make use of this constructor
     public MetaAgent(String userName, Portal portal) 
     {
         super(100);
+        
+        if(userName == null || userName.isEmpty() || portal == null)
+            throw new IllegalArgumentException("Please ensure your UserAgent username is not empty or null and your Portal is not null");
+        
         this.userName = userName;
         this.portal = portal;
         
         this.exit = false;
         startThread();
     }
+    
+    //Portals and Routers make use of this constructor.
+    public MetaAgent(String userName) 
+    {
+        super(100);
+        
+        if(userName == null || userName.isEmpty())
+            throw new IllegalArgumentException("Please ensure your Portal/Router username is not null or empty");
+        
+        this.userName = userName;
+        this.portal = portal;
+        
+        this.exit = false;
+        startThread();
+    }
+    
 
     private void startThread() 
     {

@@ -19,18 +19,25 @@ public class UserAgent extends MetaAgent
     @Override
     public void messageHandler(Message message)
     {
-        if(message.getReceiver().equals(this.userName))
+        if(message == null)
+            return;
+        else if(message.getReceiver().equals(this.userName))
             System.out.println(message.toString());
     }
     
     public void SendMessage(Message message)
     {
-        try
+        if(message == null)
+            return;
+        else
         {
-            portal.put(message);
-        }catch(InterruptedException ie)
-        {
-            System.out.println("Error!");
+            try
+            {
+                portal.put(message);
+            }catch(InterruptedException ie)
+            {
+                System.out.println("Error!");
+            }
         }
     }
 }
