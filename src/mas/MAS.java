@@ -262,28 +262,36 @@ public class MAS
         //Throws null pointer exception because user3's Portal has been deleted. User3 would be deleted if main() wasn't referencing it.
         //user3.SendMessage(new Message("A1", "Hello I should be deleted", "A3", MessageType.USERMESSAGE));
         
-        Router router = new Router("R1");
+//        Router router = new Router("R1");
+//        
+//        Portal portal = new Portal("localPortal", router);
+//        
+//        UserAgent agent = new UserAgent("Ben", portal);
+//        
+//        portal.addAgent(agent);
+//        
+//        Thread.sleep(10000);
+//        
+//        System.out.println(router.networkPortals.isEmpty());
+//        
+//        for(Map.Entry<String, Socket> map : router.networkPortals.entrySet())
+//        {
+//            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + (Socket)map.getValue());
+//        }
+//        
+//        for(Map.Entry<String, MetaAgent> map : portal.routingTable.entrySet())
+//        {
+//            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
+//        }
+//        
+//        agent.SendMessage(new Message("Jacob", "Please work", "Ben", MessageType.USERMESSAGE));
         
-        Portal portal = new Portal("localPortal", router);
-        
-        UserAgent agent = new UserAgent("Ben", portal);
-        
+        Portal portal = new Portal("smd123", "152.105.67.142", 8500);
+        UserAgent agent = new UserAgent("Jacob", portal);
+        Thread.sleep(500);
         portal.addAgent(agent);
-        
-        Thread.sleep(10000);
-        
-        System.out.println(router.networkPortals.isEmpty());
-        
-        for(Map.Entry<String, Socket> map : router.networkPortals.entrySet())
-        {
-            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + (Socket)map.getValue());
-        }
-        
-        for(Map.Entry<String, MetaAgent> map : portal.routingTable.entrySet())
-        {
-            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
-        }
-        
-        agent.SendMessage(new Message("Jacob", "Please work", "Ben", MessageType.USERMESSAGE));
+        Thread.sleep(2000);
+        Message message = new Message("Ben", "Space docking crew", "Jacob", MessageType.USERMESSAGE);
+        agent.SendMessage(message);
     }
 }

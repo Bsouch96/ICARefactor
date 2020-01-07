@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author V8178742
  */
-public class Portal extends MetaAgent
+public class Portal extends MetaAgent implements Serializable
 {
     public volatile TreeMap<String, MetaAgent> routingTable;
     public volatile TreeMap<String, Socket> externalTable;
@@ -57,7 +58,7 @@ public class Portal extends MetaAgent
     {
         super(userName);
         
-        if(ipAddress == null || !validateIpAddress(ipAddress) || port > 8000)
+        if(ipAddress == null  || port < 8000)
             throw new IllegalArgumentException("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
         
         this.routingTable = new TreeMap<>();
@@ -156,6 +157,7 @@ public class Portal extends MetaAgent
                 //External Portal broadcasting its new agent.
                 else if(routingTable.containsKey(message.getUser()) && portalRouter == null)
                 {
+                    message.setPortalConnection(null);
                     writeToSocket(message);
                 }//External Portal addition to externalTable.
                 else if(!externalTable.containsKey(message.getUser()) && portalRouter == null)

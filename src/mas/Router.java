@@ -129,9 +129,13 @@ public class Router extends MetaAgent
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
         {   //if the router doesn't have the new user stored along with the correct portal then we add it to our Tree Map.
             if(!routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
+            {
                 routerRouting.put(message.getUser(), message.getPortalConnection());
+            }
             else if(routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
+            {
                 routerRouting.remove(message.getUser());
+            }
             
             if(!localPortals.isEmpty())
             {
@@ -275,6 +279,10 @@ public class Router extends MetaAgent
                         if(objectInputStream.available() > 0)
                         {
                             Message extMessage = (Message)objectInputStream.readObject();
+                            if(extMessage.getMessageType().equals(MessageType.ADDUSERMESSAGE))
+                            {
+                                extMessage.setPrevNodeSignature(connectedSockets.getKey().toString());
+                            }
                             messageHandler(extMessage);
                         }
                     }

@@ -20,7 +20,7 @@ public class Message implements Serializable
     private final String USER;
     private final MessageType MESSAGETYPE;
     private final String ROUTINGUPDATE;
-    private final Portal PORTALCONNECTION;
+    private Portal PORTALCONNECTION;
     private String prevNodeSignature;
     
     //UserMessage Constructor
@@ -138,7 +138,10 @@ public class Message implements Serializable
         
         this.prevNodeSignature = prevNode;
     }
-    
+    public void setPortalConnection(Portal portal)
+    {
+        PORTALCONNECTION = portal;
+    }
     @Override
     public String toString()
     {
