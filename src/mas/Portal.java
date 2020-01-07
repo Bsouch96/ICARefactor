@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 public class Portal extends MetaAgent
 {
     public volatile TreeMap<String, MetaAgent> routingTable;
+    public volatile TreeMap<String, Socket> externalTable;
     private Socket portalSocket; //Create Socket here for external connections to Routers.
     private Router portalRouter; //Local Router connection.
     private String ipAddress;
@@ -55,7 +56,7 @@ public class Portal extends MetaAgent
     {
         super(userName);
         
-        if(ipAddress == null || !validateIpAddress(ipAddress) || port < 8000)
+        if(ipAddress == null || !validateIpAddress(ipAddress) || port > 8000)
             throw new IllegalArgumentException("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
         
         this.routingTable = new TreeMap<>();
@@ -151,14 +152,14 @@ public class Portal extends MetaAgent
                     }
                 }
                 //Implement else when Sockets are implemented.
-                else if(!routingTable.containsKey(message.getUser()) && portalRouter == null)
+                else if(externalTable.containsKey(message.getUser()) && portalRouter == null)
                 {
                     writeToSocket(message);
                 }
-                else if(routingTable.containsKey(message.getUser()) && portalRouter == null)
+                else if(!externalTable.containsKey(message.getUser()) && portalRouter == null)
                 {
                     System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
-                    routingTable.put(message.getUser(), portalRouter);
+                    externalTable.put(message.getUser(), portalSocket);
                 }
                 break;
             case USERMESSAGE:
@@ -172,9 +173,9 @@ public class Portal extends MetaAgent
                         System.out.println("Error!");
                     }
                 }
-                else if(routingTable.containsKey(message.getReceiver()) && routingTable.get(message.getReceiver()).equals(portalSocket))
+                else if(externalTable.containsKey(message.getReceiver()) && externalTable.get(message.getReceiver()).equals(portalSocket))
                     writeToSocket(message);
-                else if(routingTable.containsKey(message.getReceiver()))
+                else if(externalTable.containsKey(message.getReceiver()))
                 {
                     try
                     {
@@ -225,6 +226,7 @@ public class Portal extends MetaAgent
             outputStream = portalSocket.getOutputStream();
             objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(message);
+            objectOutputStream.flush();
         }catch (IOException ex)
         {
             Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
@@ -240,8 +242,10 @@ public class Portal extends MetaAgent
         
         for (int i = 0; i < newHandles.length-1; i++)
         {
-            if(!routingTable.containsKey(newHandles[i]))
+            if(!routingTable.containsKey(newHandles[i]) && portalRouter != null)
                 routingTable.put(newHandles[i], portalRouter);
+            else
+                externalTable.put(newHandles[i], portalSocket);
         }
     }
     
