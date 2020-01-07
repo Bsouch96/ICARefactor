@@ -74,15 +74,11 @@ public class Router extends MetaAgent
                     {
                         Socket incoming = serverSocket.accept();
                         
-                        OutputStream outputStream = incoming.getOutputStream();
-                        //Create an ObjectOutputStream from the output stream so we can send Messages.
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                        InputStream inputStream = incoming.getInputStream();
-                        //Create a ObjectInputStream so we can read Messages.
-                        ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                        Connection newConnection = new Connection(incoming);
+                        
                         int timeout = 0;
                         
-                        while(inputStream.available() == 0)
+                        while(newConnection.messageWaiting())
                         {
                             //increase timeout to some point and close if times out
                             timeout++;
@@ -94,7 +90,8 @@ public class Router extends MetaAgent
                             }
                          }
                         
-                        Message extMessage = (Message)objectInputStream.readObject();
+                        Message extMessage = newConnection.receiveClientMessage();
+                        
                         System.out.println("Received external connection from: " + extMessage.getSender());
                         if(extMessage.getMessageType().equals(MessageType.HELLO) && !networkPortals.containsKey(extMessage.getSender()))
                         {
