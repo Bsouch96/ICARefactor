@@ -99,6 +99,7 @@ public class Router extends MetaAgent
                         if(extMessage.getMessageType().equals(MessageType.HELLO) && !networkPortals.containsKey(extMessage.getSender()))
                         {
                             //System.out.println();
+                            readFromSocket();
                             networkPortals.put(extMessage.getSender(), incoming);
                             objectOutputStream.writeObject(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
                             writeToSocket(new Message("", MessageType.SHAREROUTINGTABLE));
@@ -269,11 +270,10 @@ public class Router extends MetaAgent
                 {
                     for(Map.Entry connectedSockets : networkPortals.entrySet())
                     {
-                        InputStream inputStream = (InputStream)connectedSockets.getKey();
-                        
-                        if(inputStream.available() > 0)
+                        Socket socket = (Socket) connectedSockets.getValue();
+                        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                        if(objectInputStream.available() > 0)
                         {
-                            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                             Message extMessage = (Message)objectInputStream.readObject();
                             messageHandler(extMessage);
                         }

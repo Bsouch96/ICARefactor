@@ -283,5 +283,7 @@ public class MAS
         {
             System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
         }
+        
+        agent.SendMessage(new Message("Jacob", "Please work", "Ben", MessageType.USERMESSAGE));
     }
 }

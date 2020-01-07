@@ -47,6 +47,7 @@ public class Portal extends MetaAgent
             throw new IllegalArgumentException("Please ensure your Portals local Router is not null");
         
         this.routingTable = new TreeMap<>();
+        this.externalTable = new TreeMap<>();
         this.portalRouter = router;
         //socket = null;
     }
@@ -60,6 +61,7 @@ public class Portal extends MetaAgent
             throw new IllegalArgumentException("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
         
         this.routingTable = new TreeMap<>();
+        this.externalTable = new TreeMap<>();
         this.portalRouter = null;
         this.ipAddress = ipAddress;
         this.port = port;
@@ -135,12 +137,12 @@ public class Portal extends MetaAgent
         
         switch (message.getMessageType())
         {
-            case ADDUSERMESSAGE:
+            case ADDUSERMESSAGE://Local Portal addition to routingTable.
                 if(!routingTable.containsKey(message.getUser()) && portalRouter != null)
                 {
                     System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
                     routingTable.put(message.getUser(), portalRouter);
-                }
+                }//Local Portal broadcasting its new agent.
                 else if(routingTable.containsKey(message.getUser()) && portalRouter != null)
                 {
                     try
@@ -151,11 +153,11 @@ public class Portal extends MetaAgent
                         System.out.println("Error!");
                     }
                 }
-                //Implement else when Sockets are implemented.
-                else if(externalTable.containsKey(message.getUser()) && portalRouter == null)
+                //External Portal broadcasting its new agent.
+                else if(routingTable.containsKey(message.getUser()) && portalRouter == null)
                 {
                     writeToSocket(message);
-                }
+                }//External Portal addition to externalTable.
                 else if(!externalTable.containsKey(message.getUser()) && portalRouter == null)
                 {
                     System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
@@ -176,15 +178,7 @@ public class Portal extends MetaAgent
                 else if(externalTable.containsKey(message.getReceiver()) && externalTable.get(message.getReceiver()).equals(portalSocket))
                     writeToSocket(message);
                 else if(externalTable.containsKey(message.getReceiver()))
-                {
-                    try
-                    {
-                        routingTable.get(message.getReceiver()).put(message);
-                    }catch(InterruptedException ie)
-                    {
-                        System.out.println("Error!");
-                    }
-                }
+                    writeToSocket(message);
                 else
                     System.out.println(this.userName + ": " + "\"" + message.getReceiver() + "\"" + " could not be found.");
                 break;
