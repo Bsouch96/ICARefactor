@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mas;
 
 import java.io.IOException;
@@ -12,9 +7,11 @@ import java.net.UnknownHostException;
 import java.util.TreeMap;
 
 /**
- *
- * @author V8178742
- */
+* The Portal class implements a portal which communicates to a local router.
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+* @version #1.0
+* @since 2019/11/06
+*/
 public class Portal extends MetaAgent
 {
     public volatile TreeMap<String, MetaAgent> routingTable;
@@ -25,7 +22,11 @@ public class Portal extends MetaAgent
     private Thread connectionThread;
     private InetAddress address;
     
-    
+    /**
+     * 
+     * @param userName
+     * @param router 
+     */
     //Portal to local Router communication.
     public Portal(String userName, Router router)
     {
@@ -39,6 +40,12 @@ public class Portal extends MetaAgent
         //socket = null;
     }
     
+    /**
+     * 
+     * @param userName
+     * @param ipAddress
+     * @param port 
+     */
     //Portal to external Router communication.
     public Portal(String userName, String ipAddress, int port)
     {
@@ -55,6 +62,11 @@ public class Portal extends MetaAgent
         connectTo();
     }
     
+    /**
+     * 
+     * @param portal
+     * @return 
+     */
     public boolean setPortal(Portal portal)
     {
         if(portal != null)
@@ -66,6 +78,11 @@ public class Portal extends MetaAgent
         return false;
     }
     
+    /**
+     * 
+     * @param router
+     * @return 
+     */
     public boolean setRouter(Router router)
     {
         if(router != null)
@@ -77,32 +94,56 @@ public class Portal extends MetaAgent
         return false;
     }
     
+    /**
+     * 
+     * @return 
+     */
     protected Router getRouter()
     {
         return portalRouter;
     }
     
+    /**
+     * 
+     * @return 
+     */
     //Uncomment when sockets are implemented.
     public Socket getSocket()
     {
         return portalSocket;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public String getIpAddress()
     {
         return ipAddress;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public int getPort()
     {
         return port;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public TreeMap getPortalRoutingTable()
     {
         return routingTable;
     }
     
+    /**
+     * 
+     * @param agent 
+     */
     public void addAgent(MetaAgent agent)
     {
         if(agent == null)
@@ -118,6 +159,10 @@ public class Portal extends MetaAgent
         messageHandler(systemMessage);
     }
     
+    /**
+     * 
+     * @param message 
+     */
     @Override
     public void messageHandler(Message message)
     {
@@ -179,6 +224,10 @@ public class Portal extends MetaAgent
         }
     }
     
+    /**
+     * 
+     * @param message 
+     */
     public void updateLocalPortalTable(Message message)
     {
         if(message == null || message.getRoutingUpdate() == null || message.getRoutingUpdate().equals(""))
@@ -193,6 +242,10 @@ public class Portal extends MetaAgent
         }
     }
     
+    /**
+     * 
+     * @param agent 
+     */
     public void removeAgent(UserAgent agent)
     {//if our map contains the username and the user is local to this portal, commence delete.
         if(routingTable.containsKey(agent.userName) && routingTable.get(agent.userName).equals(agent))
@@ -205,6 +258,9 @@ public class Portal extends MetaAgent
             System.out.println(this.userName + ": Cannot delete a user that is not local to me.");
     }
     
+    /**
+     * 
+     */
     public void connectTo()
     {
         /*connectionThread = new Thread(new Runnable()
@@ -228,6 +284,11 @@ public class Portal extends MetaAgent
         connectionThread.start();*/
     }
     
+    /**
+     * 
+     * @param ipAddress
+     * @return 
+     */
     //Should match 0.0.0.0 - 255.255.255.255
     public boolean validateIpAddress(String ipAddress)
     {
