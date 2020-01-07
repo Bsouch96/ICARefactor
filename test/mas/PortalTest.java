@@ -5,14 +5,9 @@
  */
 package mas;
 
-import java.net.Socket;
-import java.util.TreeMap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 
 /**
  *
@@ -20,174 +15,117 @@ import static org.junit.Assert.*;
  */
 public class PortalTest {
     
-    public PortalTest() {
+    public PortalTest()
+    {
+    
+    }
+
+    @Rule public ExpectedException thrown = ExpectedException.none();
+    
+    /**
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal userName variable is empty.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testLocalPortalConstArgsUserNameEmpty()
+    {
+        System.out.println("Testing Local Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure your Portal/Router username is not null or empty");
+        Router router = new Router("R1");
+        Portal portal = new Portal("", router);
     }
     
-    @BeforeClass
-    public static void setUpClass() {
+    /**
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal userName variable is null.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testLocalPortalConstArgsUserNameNull()
+    {
+        System.out.println("Testing Local Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure your Portal/Router username is not null or empty");
+        Router router = new Router("R1");
+        Portal portal = new Portal(null, router);
     }
     
-    @AfterClass
-    public static void tearDownClass() {
+    /**
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Router variable is null.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testLocalPortalConstArgsRouterNull()
+    {
+        System.out.println("Testing Local Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure your Portals local Router is not null");
+        Portal portal = new Portal("P1", null);
     }
     
-    @Before
-    public void setUp() {
+    /**
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal ipAddress is empty.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testExternalPortalConstArgsIpEmpty()
+    {
+        System.out.println("Testing External Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
+        Portal portal = new Portal("P1", "", 8500);
     }
     
-    @After
-    public void tearDown() {
-    }
-
     /**
-     * Test of setPortal method, of class Portal.
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal ipAddress is empty.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
      */
     @Test
-    public void testSetPortal() {
-        System.out.println("setPortal");
-        Portal portal = null;
-        Portal instance = null;
-        boolean expResult = false;
-        boolean result = instance.setPortal(portal);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of setRouter method, of class Portal.
-     */
-    @Test
-    public void testSetRouter() {
-        System.out.println("setRouter");
-        Router router = null;
-        Portal instance = null;
-        boolean expResult = false;
-        boolean result = instance.setRouter(router);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getRouter method, of class Portal.
-     */
-    @Test
-    public void testGetRouter() {
-        System.out.println("getRouter");
-        Portal instance = null;
-        Router expResult = null;
-        Router result = instance.getRouter();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getSocket method, of class Portal.
-     */
-    @Test
-    public void testGetSocket() {
-        System.out.println("getSocket");
-        Portal instance = null;
-        Socket expResult = null;
-        Socket result = instance.getSocket();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getIpAddress method, of class Portal.
-     */
-    @Test
-    public void testGetIpAddress() {
-        System.out.println("getIpAddress");
-        Portal instance = null;
-        String expResult = "";
-        String result = instance.getIpAddress();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getPort method, of class Portal.
-     */
-    @Test
-    public void testGetPort() {
-        System.out.println("getPort");
-        Portal instance = null;
-        int expResult = 0;
-        int result = instance.getPort();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getPortalRoutingTable method, of class Portal.
-     */
-    @Test
-    public void testGetPortalRoutingTable() {
-        System.out.println("getPortalRoutingTable");
-        Portal instance = null;
-        TreeMap expResult = null;
-        TreeMap result = instance.getPortalRoutingTable();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of addAgent method, of class Portal.
-     */
-    @Test
-    public void testAddAgent() {
-        System.out.println("addAgent");
-        MetaAgent agent = null;
-        Portal instance = null;
-        instance.addAgent(agent);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of messageHandler method, of class Portal.
-     */
-    @Test
-    public void testMessageHandler() {
-        System.out.println("messageHandler");
-        Message message = null;
-        Portal instance = null;
-        instance.messageHandler(message);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of updateLocalPortalTable method, of class Portal.
-     */
-    @Test
-    public void testUpdateLocalPortalTable() {
-        System.out.println("updateLocalPortalTable");
-        Message message = null;
-        Portal instance = null;
-        instance.updateLocalPortalTable(message);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of connectTo method, of class Portal.
-     */
-    @Test
-    public void testConnectTo() {
-        System.out.println("connectTo");
-        Portal instance = null;
-        instance.connectTo();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testExternalPortalConstArgsIpNull()
+    {
+        System.out.println("Testing External Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
+        Portal portal = new Portal("P1", null, 8500);
     }
     
+    /**
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal ipAddress is empty.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testExternalPortalConstArgsIPIncorrect()
+    {
+        System.out.println("Testing External Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
+        Portal portal = new Portal("P1", "1789562", 8500);
+    }
+    
+    /**
+     * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal ipAddress is empty.
+     * @since #1.0
+     * @exception  IllegalArgumentException
+     * @see IllegalArgumentException
+     */
+    @Test
+    public void testExternalPortalConstArgsPortIncorrect()
+    {
+        System.out.println("Testing External Portal Constructor");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
+        Portal portal = new Portal("P1", "152.0.0.0", -1425);
+    }
 }

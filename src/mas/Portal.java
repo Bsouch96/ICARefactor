@@ -30,6 +30,10 @@ public class Portal extends MetaAgent
     public Portal(String userName, Router router)
     {
         super(userName);
+        
+        if(router == null)
+            throw new IllegalArgumentException("Please ensure your Portals local Router is not null");
+        
         this.routingTable = new TreeMap<>();
         this.portalRouter = router;
         //socket = null;
@@ -39,6 +43,10 @@ public class Portal extends MetaAgent
     public Portal(String userName, String ipAddress, int port)
     {
         super(userName);
+        
+        if(ipAddress == null || !validateIpAddress(ipAddress) || port < 8000)
+            throw new IllegalArgumentException("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
+        
         this.routingTable = new TreeMap<>();
         this.portalRouter = null;
         this.ipAddress = ipAddress;
@@ -218,5 +226,15 @@ public class Portal extends MetaAgent
             }
         });
         connectionThread.start();*/
+    }
+    
+    //Should match 0.0.0.0 - 255.255.255.255
+    public boolean validateIpAddress(String ipAddress)
+    {
+        return ipAddress.matches("\\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
+                        "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
+                        "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
+                        "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\b");
+            
     }
 }
