@@ -5,11 +5,13 @@
  */
 package mas;
 
+import java.io.Serializable;
+
 /**
  *
  * @author V8178742
  */
-public enum MessageType
+public enum MessageType implements Serializable
 {
     USERMESSAGE,
     DELETEUSERMESSAGE,

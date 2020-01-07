@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 public class Router extends MetaAgent
 {
     public volatile TreeMap<String, MetaAgent> routerRouting;
-    private volatile TreeMap<String, Socket> networkPortals;
+    public volatile TreeMap<String, Socket> networkPortals;
     public volatile ArrayList<Portal> localPortals;
     private Thread acceptThread;
     private ServerSocket serverSocket;
@@ -42,7 +43,10 @@ public class Router extends MetaAgent
         
         try
         {
-            serverSocket = new ServerSocket();
+            serverSocket = new ServerSocket(8500, 0, InetAddress.getLocalHost());
+            
+            System.out.println(InetAddress.getLocalHost());
+            waitForConnection();
         }catch(UnknownHostException uh)
         {
             System.out.println("Host Unknown");
@@ -69,6 +73,7 @@ public class Router extends MetaAgent
                     try
                     {
                         Socket incoming = serverSocket.accept();
+                        
                         OutputStream outputStream = incoming.getOutputStream();
                         //Create an ObjectOutputStream from the output stream so we can send Messages.
                         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
@@ -82,7 +87,7 @@ public class Router extends MetaAgent
                             //increase timeout to some point and close if times out
                             timeout++;
                             
-                            if(timeout > 10000000)
+                            if(timeout > 25000000)
                             {
                                 incoming.close();
                                 continue;
@@ -90,10 +95,13 @@ public class Router extends MetaAgent
                          }
                         
                         Message extMessage = (Message)objectInputStream.readObject();
+                        System.out.println("Received external connection from: " + extMessage.getSender());
                         if(extMessage.getMessageType().equals(MessageType.HELLO) && !networkPortals.containsKey(extMessage.getSender()))
                         {
+                            //System.out.println();
                             networkPortals.put(extMessage.getSender(), incoming);
                             objectOutputStream.writeObject(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
+                            writeToSocket(new Message("", MessageType.SHAREROUTINGTABLE));
                         }
                         else
                             System.out.println("Already connected to this connection!");
@@ -202,12 +210,14 @@ public class Router extends MetaAgent
                 //Send message to all sockets but the socket that the message came from.
                 for(Map.Entry map : networkPortals.entrySet())
                 {
-                    if(!message.getPrevNodeSignature().equals(map.getKey()))
-                    {
+                    if(message.getPrevNodeSignature() != null && !message.getPrevNodeSignature().equals(map.getKey()))
+                    {//OutputStream outputStream = incoming.getOutputStream();
                         message.setPrevNodeSignature(this.userName);
-                        OutputStream outputStream = (OutputStream)map.getValue();
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                        //OutputStream outputStream = ;
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream((OutputStream)map.getValue());
+                        //ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                         objectOutputStream.writeObject(message);
+                        objectOutputStream.flush();
                     }
                     else
                     {
@@ -222,9 +232,11 @@ public class Router extends MetaAgent
                         }
                         
                         message.setPrevNodeSignature(this.userName);
-                        OutputStream outputStream = networkPortals.get(message.getUser()).getOutputStream();
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                        //OutputStream outputStream = networkPortals.get(message.getUser()).getOutputStream();
+                        Socket socket = (Socket)map.getValue();
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                         objectOutputStream.writeObject(new Message(routingHandles.toString(), MessageType.SHAREROUTINGTABLE));
+                        objectOutputStream.flush();
                     }
                 }
             }catch (IOException ex)

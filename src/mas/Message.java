@@ -5,11 +5,13 @@
  */
 package mas;
 
+import java.io.Serializable;
+
 /**
  * 
  * @author V8178742
  */
-public class Message
+public class Message implements Serializable
 {
     private final static long serialVersionUID = 1L;
     private final String RECEIVER;
@@ -56,7 +58,7 @@ public class Message
     //Share Router routing table Constructor
     Message(String routingUpdate, MessageType messageType)
     {
-        if(messageType == null || !messageType.equals(messageType.SHAREROUTINGTABLE) || routingUpdate == null || routingUpdate.isEmpty())
+        if(messageType == null || !messageType.equals(messageType.SHAREROUTINGTABLE) || routingUpdate == null)
             throw new IllegalArgumentException("Please check your new Share Router Message parameters.");
         
         this.RECEIVER = null;
@@ -71,7 +73,7 @@ public class Message
 
     Message(String sender, String msgBody, MessageType messageType)
     {
-        if(messageType == null || !messageType.equals(MessageType.HELLO) || !messageType.equals(MessageType.HELLOACK) || sender == null || sender.isEmpty())
+        if(messageType == null || !messageType.equals(MessageType.HELLO) && !messageType.equals(MessageType.HELLOACK) || sender == null || sender.isEmpty())
             throw new IllegalArgumentException("Please ensure your Hello and Helloack message parameters are appropriate.");
         
         this.SENDER = sender;
