@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mas;
 
 import java.io.IOException;
@@ -22,9 +17,11 @@ import java.util.logging.Logger;
 
 
 /**
- *
- * @author V8178742
- */
+* The Message class is used to create different types of messages.
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+* @version #1.0
+* @since 2019/11/06
+*/
 public class Router extends MetaAgent
 {
     public volatile TreeMap<String, MetaAgent> routerRouting;
@@ -34,6 +31,10 @@ public class Router extends MetaAgent
     private ServerSocket serverSocket;
     private Thread socketThread;
     
+    /**
+     * 
+     * @param userName 
+     */
     public Router(String userName)
     {
         super(userName);
@@ -56,11 +57,18 @@ public class Router extends MetaAgent
         }
     }
 
+    /**
+     * 
+     * @return 
+     */
     public TreeMap getRouterRoutingTable()
     {
         return routerRouting;
     }
     
+    /**
+     * 
+     */
     public void waitForConnection()
     {
         acceptThread = new Thread(new Runnable()
@@ -98,7 +106,7 @@ public class Router extends MetaAgent
                             //System.out.println();
                             readFromSocket();
                             networkPortals.put(extMessage.getSender(), incoming);
-                            objectOutputStream.writeObject(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
+                            //objectOutputStream.writeObject(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
                             writeToSocket(new Message("", MessageType.SHAREROUTINGTABLE));
                         }
                         else
@@ -116,6 +124,10 @@ public class Router extends MetaAgent
         acceptThread.start();
     }
     
+    /**
+     * 
+     * @param message 
+     */
     @Override
     public synchronized void messageHandler(Message message) 
     {   //if we don't know about the new users portal we will add it to our portal list if it is local.
@@ -184,21 +196,37 @@ public class Router extends MetaAgent
             System.out.println("Router " + this.userName + ": Message receiver doesn't exist!");
     }
     
+    /**
+     * 
+     * @return 
+     */
     public TreeMap getRouterRouting()
     {
         return routerRouting;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public TreeMap getNetworkPortals()
     {
         return networkPortals;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public ArrayList<Portal> getLocalPortals()
     {
         return localPortals;
     }
     
+    /**
+     * 
+     * @param message 
+     */
     public synchronized void writeToSocket(Message message)
     {
         if(message == null)
@@ -212,16 +240,16 @@ public class Router extends MetaAgent
                 //Send message to all sockets but the socket that the message came from.
                 for(Map.Entry map : networkPortals.entrySet())
                 {
-                    if(message.getPrevNodeSignature() != null && !message.getPrevNodeSignature().equals(map.getKey()))
+                    //if(message.getPrevNodeSignature() != null && !message.getPrevNodeSignature().equals(map.getKey()))
                     {//OutputStream outputStream = incoming.getOutputStream();
-                        message.setPrevNodeSignature(this.userName);
+                        //message.setPrevNodeSignature(this.userName);
                         //OutputStream outputStream = ;
                         ObjectOutputStream objectOutputStream = new ObjectOutputStream((OutputStream)map.getValue());
                         //ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                         objectOutputStream.writeObject(message);
                         objectOutputStream.flush();
                     }
-                    else
+                    //else
                     {
                         StringBuilder routingHandles = new StringBuilder();
                         //Collect all socket handles to update Portal.
@@ -233,7 +261,7 @@ public class Router extends MetaAgent
                                 routingHandles.append(routerMap.getKey()).append("|");
                         }
                         
-                        message.setPrevNodeSignature(this.userName);
+                        //message.setPrevNodeSignature(this.userName);
                         //OutputStream outputStream = networkPortals.get(message.getUser()).getOutputStream();
                         Socket socket = (Socket)map.getValue();
                         ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -250,7 +278,7 @@ public class Router extends MetaAgent
         {
             try
             {
-                message.setPrevNodeSignature(this.userName);
+                //message.setPrevNodeSignature(this.userName);
                 OutputStream outputStream = networkPortals.get(message.getUser()).getOutputStream();
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                 objectOutputStream.writeObject(message);
@@ -261,6 +289,9 @@ public class Router extends MetaAgent
         }
     }
     
+    /**
+     * 
+     */
     public void readFromSocket()
     {
         socketThread = new Thread(new Runnable()
@@ -278,7 +309,7 @@ public class Router extends MetaAgent
                             Message extMessage = (Message)objectInputStream.readObject();
                             if(extMessage.getMessageType().equals(MessageType.ADDUSERMESSAGE))
                             {
-                                extMessage.setPrevNodeSignature(connectedSockets.getKey().toString());
+                                //extMessage.setPrevNodeSignature(connectedSockets.getKey().toString());
                             }
                             messageHandler(extMessage);
                         }

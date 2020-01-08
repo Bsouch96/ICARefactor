@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mas;
 
 import org.junit.After;
@@ -13,25 +8,42 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- *
- * @author Souchys
- */
+* The Message class is used to create different types of messages.
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+* @version #1.0
+* @since 2019/11/06
+*/
 @RunWith(Suite.class)
 @Suite.SuiteClasses({mas.MetaAgentTest.class, mas.PortalTest.class, mas.MessageTypeTest.class, mas.MessageTest.class, mas.RouterTest.class, mas.UserAgentTest.class, mas.MASTest.class})
 public class MasSuite {
 
+    /**
+     * 
+    */
     @BeforeClass
     public static void setUpClass() throws Exception {
     }
 
+    /**
+     * 
+     * @throws Exception 
+     */
     @AfterClass
     public static void tearDownClass() throws Exception {
     }
 
+    /**
+     * 
+     * @throws Exception 
+     */
     @Before
     public void setUp() throws Exception {
     }
 
+    /**
+     * 
+     * @throws Exception 
+     */
     @After
     public void tearDown() throws Exception {
     }
