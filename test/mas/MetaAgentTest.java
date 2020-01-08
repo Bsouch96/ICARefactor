@@ -50,7 +50,7 @@ public class MetaAgentTest {
         Router router = new Router("R1");
         Portal portal1 = new Portal("P1",router); 
         MetaAgent instance = new UserAgent("123", portal1);
-        instance.run();
+        
         
     }
 
@@ -63,7 +63,7 @@ public class MetaAgentTest {
         Router router = new Router("R1");
         Portal portal1 = new Portal("P1",router); 
         MetaAgent instance = new UserAgent("123", portal1);
-        instance.stop();
+        
         
     }
 
