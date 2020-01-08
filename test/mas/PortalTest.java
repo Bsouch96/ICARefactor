@@ -5,6 +5,11 @@
  */
 package mas;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.Socket;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -37,6 +42,15 @@ public class PortalTest {
         Router router = new Router("R1");
         Portal portal = new Portal("", router);
     }
+    @Test
+    public void testWriteToSocketNullMessage()
+    {
+        System.out.println("Testing Write to socket null message");
+        Router router = new Router("R1");
+        Portal portal = new Portal("", router);
+        Message nullmsg = null;
+        portal.writeToSocket(nullmsg);
+    }
     
     /**
      * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal userName variable is null.
@@ -52,6 +66,73 @@ public class PortalTest {
         thrown.expectMessage("Please ensure your Portal/Router username is not null or empty");
         Router router = new Router("R1");
         Portal portal = new Portal(null, router);
+    }
+    @Test
+    public void testSetPortal()
+    {
+        System.out.println("Testing Set Portal");
+        Router router = new Router("R1");
+        Portal portal = new Portal("p1", router);
+        Portal portal2 = new Portal("p2", router);
+        boolean result = portal.setPortal(portal2);
+        boolean expResult = true;
+        assertEquals(expResult, result);
+        
+    }
+    @Test
+    public void testSetRouter()
+    {
+        System.out.println("Testing SetRouter");
+        Router router = new Router("R1");
+        Router router2 = new Router("R2");
+        Portal portal = new Portal("p1", router);
+        
+        boolean result = portal.setRouter(router2);
+        boolean expResult = true;
+        assertEquals(expResult, result);
+        
+    }
+
+//    public void testGetSocket() throws IOException
+//    {
+//        System.out.println("Testing Set Portal Socket");
+//        System.out.println("Testing External Portal Constructor");
+//        Portal portal = new Portal("P1", "123.123.123", 8500);
+//        Socket socket;
+//        int i = 8500;
+//        socket = new Socket("123.123.123",i);
+//        
+//        assertEquals(portal.getSocket(), socket);
+//        
+//        
+//        
+//        
+//        
+//    }
+    @Test
+    public void testSetRouterNull()
+    {
+        System.out.println("Testing Setting Router Null");
+        Router router = new Router("R1");
+        Router router2 = null;
+        Portal portal = new Portal("p1", router);
+        
+        boolean result = portal.setRouter(router2);
+        boolean expResult = false;
+        assertEquals(expResult, result);
+        
+    }
+    @Test
+    public void testSetPortalNull()
+    {
+        System.out.println("Testing Set Portal Null");
+        Router router = new Router("R1");
+        Portal portal = new Portal("p1", router);
+        Portal portal2 = null;
+        boolean result = portal.setPortal(portal2);
+        boolean expResult = false;
+        assertEquals(expResult, result);
+        
     }
     
     /**
@@ -128,4 +209,5 @@ public class PortalTest {
         thrown.expectMessage("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
         Portal portal = new Portal("P1", "152.0.0.0", -1425);
     }
+    
 }
