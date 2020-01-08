@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Souchys
+ * @author Teddy
  */
 public class MetaAgentTest {
     
@@ -42,11 +42,11 @@ public class MetaAgentTest {
      */
     @Test
     public void testRun() {
+        
         System.out.println("run");
-        MetaAgent instance = null;
+        MetaAgent instance = new MetaAgent();
         instance.run();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
     }
 
     /**
