@@ -1,28 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mas;
-
+/**
+* The MessageAgent class is an abstract class which is a parent to the userAgent class.
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+* @version #1.0
+* @since 2019/11/06
+*/
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author V8178742
- */
 public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements Runnable, Serializable
 {
+
     protected String userName;
     protected Portal portal;
     
     private Thread t;
     private boolean exit;
 
+    /**
+     * The MetaAgent() makes use of the userName and portal to start a thread.
+     * @param userName created to start the thread.
+     * @param portal created to start the thread.
+     * @throws IllegalArgumentException
+     * @see IllegalArgumentException.
+     */
     //UserAgents make use of this constructor
     public MetaAgent(String userName, Portal portal) 
     {
@@ -38,6 +42,12 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
         startThread();
     }
     
+    /**
+     * The MetaAgent() makes use of the userName to start a thread.
+     * @param userName used as a unique id within the MAS.
+     * @throws IllegalArgumentException
+     * @see IllegalArgumentException.
+     */
     //Portals and Routers make use of this constructor.
     public MetaAgent(String userName) 
     {
@@ -54,12 +64,21 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
     }
     
 
+    /**
+     * startThread() to start the thread.
+     */
     private void startThread() 
     {
         t = new Thread(this);
         t.start();
     }
     
+    
+    /**
+     * run() to run and log thread.
+     * @throws IllegalArgumentException ex.
+     * @see IllegalArgumentException.
+     */
     @Override
     public void run()
     {
@@ -73,11 +92,19 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
         }
     }
     
+    /**
+     *  stop() to exit the thread.
+     */
     public void stop()
     {
         exit = true;
     }
     
+    
+    /**
+     * messageHandler() makes use of the message().
+     * @param message system print out the message body. 
+     */
     public void messageHandler(Message message)
     {
         System.out.println(message.getMessageBody());
