@@ -1,5 +1,6 @@
 package mas;
 
+import java.net.Socket;
 import java.util.Map;
 
 public class MAS
@@ -175,7 +176,7 @@ public class MAS
         
         //------------------------------------------------------ ICA Refactor ---------------------------------------------------------------------------
         
-        Router router = new Router("R1");
+        /*Router router = new Router("R1");
         
         Portal portal1 = new Portal("P1", router);
         
@@ -221,18 +222,18 @@ public class MAS
         for(Map.Entry<String, MetaAgent> mapRouting : router.routerRouting.entrySet())
         {
             System.out.println("Router 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
-        }
+        }*/
         
-        /*user1.SendMessage(new Message("A2", "Hello!", "A1", MessageType.USERMESSAGE));
-        user2.SendMessage(new Message("A3", "Hello A3!", "A2", MessageType.USERMESSAGE));
-        user3.SendMessage(new Message("A1", "Hello A1!", "A3", MessageType.USERMESSAGE));*/
+        //user1.SendMessage(new Message("A2", "Hello!", "A1", MessageType.USERMESSAGE));
+        //user2.SendMessage(new Message("A3", "Hello A3!", "A2", MessageType.USERMESSAGE));
+        //user3.SendMessage(new Message("A1", "Hello A1!", "A3", MessageType.USERMESSAGE));
         
-        System.out.println("\n---------------------------------- Deleting Users Tests -----------------------------\n");
+        /*System.out.println("\n---------------------------------- Deleting Users Tests -----------------------------\n");
         
         portal1.removeAgent(user3);
         portal2.removeAgent(user3);
         
-        Thread.sleep(500);
+        Thread.sleep(2000);
         
         for(Map.Entry<String, MetaAgent> mapRouting : portal1.routingTable.entrySet())
         {
@@ -247,9 +248,57 @@ public class MAS
         for(Map.Entry<String, MetaAgent> mapRouting : router.routerRouting.entrySet())
         {
             System.out.println("Router 1 Key: " + mapRouting.getKey() + " ----------- Value: " + mapRouting.getValue().userName);
-        }
+        }*/
         
         //Throws null pointer exception because user3's Portal has been deleted. User3 would be deleted if main() wasn't referencing it.
         //user3.SendMessage(new Message("A1", "Hello I should be deleted", "A3", MessageType.USERMESSAGE));
+        
+//        Router router = new Router("R1");
+//        
+//        Portal portal = new Portal("localPortal", router);
+//        
+//        UserAgent agent = new UserAgent("Ben", portal);
+//        
+//        portal.addAgent(agent);
+//        
+//        Thread.sleep(10000);
+//        
+//        System.out.println(router.networkPortals.isEmpty());
+//        
+//        for(Map.Entry<String, Socket> map : router.networkPortals.entrySet())
+//        {
+//            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + (Socket)map.getValue());
+//        }
+//        
+//        for(Map.Entry<String, MetaAgent> map : portal.routingTable.entrySet())
+//        {
+//            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
+//        }
+//        
+//        agent.SendMessage(new Message("Jacob", "Please work", "Ben", MessageType.USERMESSAGE));
+        
+        Router router = new Router("R1");
+        
+        Portal portal = new Portal("localPortal", router);
+        
+        UserAgent agent = new UserAgent("Ben", portal);
+        
+        portal.addAgent(agent);
+        
+        Thread.sleep(10000);
+        
+        System.out.println(router.networkPortals.isEmpty());
+        
+        for(Map.Entry<String, Socket> map : router.networkPortals.entrySet())
+        {
+            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + (Socket)map.getValue());
+        }
+        
+        for(Map.Entry<String, MetaAgent> map : portal.routingTable.entrySet())
+        {
+            System.out.println("Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
+        }
+        
+        agent.SendMessage(new Message("Jacob", "Please work", "Ben", MessageType.USERMESSAGE));
     }
 }
