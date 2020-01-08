@@ -73,8 +73,8 @@ public class Message implements Serializable
 
     Message(String sender, String msgBody, MessageType messageType)
     {
-        if(messageType == null || !messageType.equals(MessageType.HELLO) && !messageType.equals(MessageType.HELLOACK) || sender == null || sender.isEmpty())
-            throw new IllegalArgumentException("Please ensure your Hello and Helloack message parameters are appropriate.");
+        //if(messageType == null || !messageType.equals(MessageType.HELLO) && !messageType.equals(MessageType.HELLOACK) || sender == null || sender.isEmpty())
+            //throw new IllegalArgumentException("Please ensure your Hello and Helloack message parameters are appropriate.");
         
         this.SENDER = sender;
         this.MESSAGEBODY = msgBody;

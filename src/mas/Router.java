@@ -96,11 +96,9 @@ public class Router extends MetaAgent
                         
                         Message extMessage = newConnection.receiveClientMessage();
                         
-                        System.out.println("Received external connection from: " + extMessage.getSender());
                         if(extMessage.getMessageType().equals(MessageType.HELLO) && !networkPortals.containsKey(extMessage.getSender()))
                         {
                             readFromSocket();
-                            System.out.println("Adding external connection");
                             newConnection.setHandle(extMessage.getSender());
                             networkPortals.put(extMessage.getSender(), newConnection);
                             newConnection.sendClientMessage(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
@@ -125,12 +123,6 @@ public class Router extends MetaAgent
     public synchronized void messageHandler(Message message) 
     {   
         lock.lock();
-        //System.out.println(message.toString());
-        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.USERMESSAGE))
-        {
-            //System.out.println("ROUTER: PREVIOUS NODE SIGNATURE OF ADD MESSAGE: " + message.getPrevNodeSignature());
-            //System.out.println("External P1 message is at Router");
-        }
         
         //if we don't know about the new users portal we will add it to our portal list if it is local.
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) && message.getPortalConnection() != null && message.getPortalConnection().getRouter() != null && !localPortals.contains(message.getPortalConnection()))
@@ -166,12 +158,10 @@ public class Router extends MetaAgent
                     {
                         if(!p.equals(message.getPortalConnection()))
                         {
-                            //System.out.println("Router: Passing this new user locally" + message.getUser());
                             p.put(message);
                         }
-                        else// if(p.equals(message.getPortalConnection()) && )
+                        else
                         {
-                            //System.out.println("Router: Handles sent to Local Portals: " + getHandles());
                             message.setPrevNodeSignature(userName);
                             p.put(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                         }
@@ -182,21 +172,18 @@ public class Router extends MetaAgent
                     }
                 });
             }
-            //System.out.println("Is network portals empty: " + networkPortals.isEmpty() + " Message Type: " + message.getMessageType() + " from: " + message.getPrevNodeSignature());
             if(!networkPortals.isEmpty())
             {
                 networkLock.lock();
                 String oldSender = message.getPrevNodeSignature();
-                System.out.println("old sender: " + oldSender);
                 for(Map.Entry<String, Connection> map : networkPortals.entrySet())
                 {
-                    System.out.println("key is: " + map.getKey());
                     if(!oldSender.equals(map.getKey()))
                     {
                         try
                         {
-                            System.out.println("I shouldnt be here, sending to: " +  networkPortals.get(map.getKey()).getHandle());
                             message.setPrevNodeSignature(userName);
+                            message.setPortalConnection(null);
                             networkPortals.get(map.getKey()).sendClientMessage(message);
                         } catch (IOException ex)
                         {
@@ -207,10 +194,8 @@ public class Router extends MetaAgent
                     {
                         try 
                         {
-                            System.out.println("Router: Handles sent to network: " + getHandles());
                             message.setPrevNodeSignature(userName);
                             networkPortals.get(map.getKey()).sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
-                            //map.getValue().sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                         } catch (IOException ex)
                         {
                             Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
@@ -225,7 +210,6 @@ public class Router extends MetaAgent
         {
             try
             {
-                //System.out.println("Router " + this.userName + ": Passed though router");
                 routerRouting.get(message.getReceiver()).put(message);
             }catch(InterruptedException ie)
             {
@@ -235,7 +219,7 @@ public class Router extends MetaAgent
             {
                 lock.unlock();
             }
-        }//When sockets are implemented, the else will write the message to the connected socket. Add a seen signature to avoid infinite.
+        }
         else if(message.getMessageType().equals(MessageType.USERMESSAGE) && networkPortals.containsKey(message.getReceiver()))
         {
             try
@@ -291,17 +275,6 @@ public class Router extends MetaAgent
                             if(socket.messageWaiting())
                             {
                                 Message extMessage = socket.receiveClientMessage();
-                                /*
-                                if(extMessage.getMessageType().equals(MessageType.ADDUSERMESSAGE)|| extMessage.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
-                                {
-                                    //System.out.println("ROUTER: READ FROM SOCKET: " + extMessage.getPrevNodeSignature());
-                                    extMessage.setPrevNodeSignature(connectedSockets.get    Key().toString());
-                                }
-                                else
-                                {
-                                    System.out.println("USER MESSAGE");
-                                }
-                                */
                                 Router.this.put(extMessage);
                             }
                         }
