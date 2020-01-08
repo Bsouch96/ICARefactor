@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 public class Router extends MetaAgent
 {
     public volatile TreeMap<String, MetaAgent> routerRouting;
-    public volatile TreeMap<String, Socket> networkPortals;
+    public volatile TreeMap<String, Connection> networkPortals;
     public volatile ArrayList<Portal> localPortals;
     private Thread acceptThread;
     private ServerSocket serverSocket;
@@ -95,21 +95,22 @@ public class Router extends MetaAgent
                         System.out.println("Received external connection from: " + extMessage.getSender());
                         if(extMessage.getMessageType().equals(MessageType.HELLO) && !networkPortals.containsKey(extMessage.getSender()))
                         {
-                            //System.out.println();
                             readFromSocket();
-                            networkPortals.put(extMessage.getSender(), incoming);
-                            objectOutputStream.writeObject(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
-                            writeToSocket(new Message("", MessageType.SHAREROUTINGTABLE));
+                            System.out.println("Adding external connection");
+                            newConnection.setHandle(extMessage.getSender());
+                            networkPortals.put(extMessage.getSender(), newConnection);
+                            newConnection.sendClientMessage(new Message(Router.this.userName, "Hello Back!", MessageType.HELLOACK));
+                            newConnection.sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                         }
                         else
                             System.out.println("Already connected to this connection!");
                     }catch (IOException ex)
                     {
                         Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ClassNotFoundException ex) {
+                    } catch (ClassNotFoundException ex)
+                    {
                         Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
                 }
             }
         });
@@ -118,15 +119,27 @@ public class Router extends MetaAgent
     
     @Override
     public synchronized void messageHandler(Message message) 
-    {   //if we don't know about the new users portal we will add it to our portal list if it is local.
-        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) && message.getPortalConnection().getRouter() != null && !localPortals.contains(message.getPortalConnection()))
+    {   
+        lock.lock();
+        
+        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.USERMESSAGE))
+        {
+            System.out.println("ROUTER: PREVIOUS NODE SIGNATURE OF ADD MESSAGE: " + message.getPrevNodeSignature());
+            //System.out.println("External P1 message is at Router");
+        }
+        
+        //if we don't know about the new users portal we will add it to our portal list if it is local.
+        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) && message.getPortalConnection() != null && message.getPortalConnection().getRouter() != null && !localPortals.contains(message.getPortalConnection()))
+        {
             localPortals.add(message.getPortalConnection());
+        }
         
         //if we have connected portals and we receive a system message then we loop though our portals and send them the message.
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
         {   //if the router doesn't have the new user stored along with the correct portal then we add it to our Tree Map.
-            if(!routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
+            if(!routerRouting.containsKey(message.getUser()) && message.getPortalConnection() != null && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
             {
+                System.out.println(message.getPortalConnection().userName);
                 routerRouting.put(message.getUser(), message.getPortalConnection());
             }
             else if(routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
@@ -141,31 +154,53 @@ public class Router extends MetaAgent
                     try
                     {
                         if(!p.equals(message.getPortalConnection()))
+                        {
+                            System.out.println("Router: Passing this new user locally" + message.getUser());
                             p.put(message);
+                        }
                         else// if(p.equals(message.getPortalConnection()) && )
                         {
-                            StringBuilder routingHandles = new StringBuilder();
-                            
-                            for(Map.Entry routerMap : routerRouting.entrySet())
-                            {
-                                if(routerMap.getKey().equals(routerRouting.lastKey()))
-                                    routingHandles.append(routerMap.getKey().toString());
-                                else
-                                    routingHandles.append(routerMap.getKey()).append("|");
-                            }
-                            
-                            p.put(new Message(routingHandles.toString(), MessageType.SHAREROUTINGTABLE));
+                            System.out.println("Router: Handles sent to Local Portals: " + getHandles());
+                            p.put(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                         }
                             
                     }catch(InterruptedException ie)
                     {
-                        System.out.println("Error!");
+                        Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ie);
                     }
                 });
             }
-            if(!networkPortals.isEmpty()) //When sockets are implemented, serialise message and write to socket.
-                writeToSocket(message);
-            
+            System.out.println("Is network portals empty: " + networkPortals.isEmpty() + " Message Type: " + message.getMessageType() + " from: " + message.getPrevNodeSignature());
+            if(!networkPortals.isEmpty())
+            {
+                for(Map.Entry<String, Connection> map : networkPortals.entrySet())
+                {
+                    if(!message.getPrevNodeSignature().equals(networkPortals.containsKey(message.getPrevNodeSignature())))
+                    {
+                        try
+                        {
+                            System.out.println("I shouldnt be here, sending to: " +  networkPortals.get(map.getKey()).getHandle());
+                            networkPortals.get(map.getKey()).sendClientMessage(message);
+                        } catch (IOException ex)
+                        {
+                            Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    else
+                    {
+                        try 
+                        {
+                            System.out.println("Router: Handles sent to network: " + getHandles());
+                            networkPortals.get(map.getKey()).sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
+                            //map.getValue().sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
+                        } catch (IOException ex)
+                        {
+                            Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+                lock.unlock();
+            }
         }//if our message is for users, we search our Tree Map and forward it accordingly.
         else if(message.getMessageType().equals(MessageType.USERMESSAGE) && routerRouting.containsKey(message.getReceiver()))
         {
@@ -175,13 +210,32 @@ public class Router extends MetaAgent
                 routerRouting.get(message.getReceiver()).put(message);
             }catch(InterruptedException ie)
             {
-                System.out.println("Error!");
+                Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ie);
+            }
+            finally
+            {
+                lock.unlock();
             }
         }//When sockets are implemented, the else will write the message to the connected socket. Add a seen signature to avoid infinite.
         else if(message.getMessageType().equals(MessageType.USERMESSAGE) && networkPortals.containsKey(message.getReceiver()))
-            writeToSocket(message);
+        {
+            try
+            {
+                networkPortals.get(message.getSender()).sendClientMessage(message);
+            } catch (IOException ex)
+            {
+                Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            finally
+            {
+                lock.unlock();
+            }
+        }
         else
+        {
             System.out.println("Router " + this.userName + ": Message receiver doesn't exist!");
+            lock.unlock();
+        }
     }
     
     public TreeMap getRouterRouting()
@@ -199,100 +253,83 @@ public class Router extends MetaAgent
         return localPortals;
     }
     
-    public synchronized void writeToSocket(Message message)
-    {
-        if(message == null)
-            return;
-        
-        if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.DELETEUSERMESSAGE) || message.getMessageType().equals(MessageType.SHAREROUTINGTABLE))
-        {
-            try
-            {
-                
-                //Send message to all sockets but the socket that the message came from.
-                for(Map.Entry map : networkPortals.entrySet())
-                {
-                    if(message.getPrevNodeSignature() != null && !message.getPrevNodeSignature().equals(map.getKey()))
-                    {//OutputStream outputStream = incoming.getOutputStream();
-                        message.setPrevNodeSignature(this.userName);
-                        //OutputStream outputStream = ;
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream((OutputStream)map.getValue());
-                        //ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                        objectOutputStream.writeObject(message);
-                        objectOutputStream.flush();
-                    }
-                    else
-                    {
-                        StringBuilder routingHandles = new StringBuilder();
-                        //Collect all socket handles to update Portal.
-                        for(Map.Entry routerMap : routerRouting.entrySet())
-                        {
-                            if(routerMap.getKey().equals(routerRouting.lastKey()))
-                                routingHandles.append(routerMap.getKey().toString());
-                            else
-                                routingHandles.append(routerMap.getKey()).append("|");
-                        }
-                        
-                        message.setPrevNodeSignature(this.userName);
-                        //OutputStream outputStream = networkPortals.get(message.getUser()).getOutputStream();
-                        Socket socket = (Socket)map.getValue();
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                        objectOutputStream.writeObject(new Message(routingHandles.toString(), MessageType.SHAREROUTINGTABLE));
-                        objectOutputStream.flush();
-                    }
-                }
-            }catch (IOException ex)
-            {
-                Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        else
-        {
-            try
-            {
-                message.setPrevNodeSignature(this.userName);
-                OutputStream outputStream = networkPortals.get(message.getUser()).getOutputStream();
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                objectOutputStream.writeObject(message);
-            }catch (IOException ex)
-            {
-                Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-    
     public void readFromSocket()
     {
         socketThread = new Thread(new Runnable()
         {   @Override
             public void run()
             {
-                try
+                while(true)
                 {
-                    for(Map.Entry connectedSockets : networkPortals.entrySet())
+                    try
                     {
-                        Socket socket = (Socket) connectedSockets.getValue();
-                        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                        if(objectInputStream.available() > 0)
+                        for(Map.Entry connectedSockets : networkPortals.entrySet())
                         {
-                            Message extMessage = (Message)objectInputStream.readObject();
-                            if(extMessage.getMessageType().equals(MessageType.ADDUSERMESSAGE))
+                            Connection socket = (Connection) connectedSockets.getValue();
+
+                            if(socket.messageWaiting())
                             {
-                                extMessage.setPrevNodeSignature(connectedSockets.getKey().toString());
+                                Message extMessage = socket.receiveClientMessage();
+                                System.out.println("ROUTER: READ FROM SOCKET: " + extMessage.getPrevNodeSignature());
+                                if(extMessage.getMessageType().equals(MessageType.ADDUSERMESSAGE)|| extMessage.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
+                                {
+                                    extMessage.setPrevNodeSignature(connectedSockets.getKey().toString());
+                                }
+
+                                Router.this.put(extMessage);
                             }
-                            messageHandler(extMessage);
                         }
+                    }catch (IOException ex)
+                    {
+                        Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                    }catch (ClassNotFoundException ex)
+                    {
+                        Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                    }catch (InterruptedException ex)
+                    {
+                        Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }catch (IOException ex)
-                {
-                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ClassNotFoundException ex)
-                {
-                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
         
         socketThread.start();
+    }
+    
+    public String getHandles()
+    {
+        String routingHandles = "";            
+        
+        for(Map.Entry<String, MetaAgent> routerMap : routerRouting.entrySet())
+        {
+            if(routerMap.getKey().equals(routerRouting.lastKey()) && networkPortals.isEmpty())
+            {
+                routingHandles += routerMap.getKey();
+            }
+            else
+            {
+                routingHandles += routerMap.getKey();
+                routingHandles += "|";
+            }
+        }
+        for(Map.Entry<String, Connection> conMap : networkPortals.entrySet())
+        {
+            if(conMap.getKey().equals(networkPortals.lastKey()))
+            {
+                routingHandles += conMap.getKey();
+            }
+            else
+            {
+                routingHandles += conMap.getKey();
+                routingHandles += "|";
+            }
+        }
+        
+        if(routingHandles.substring(routingHandles.length()).equals("\\|"))
+        {
+            routingHandles = routingHandles.substring(0, routingHandles.length()-1);
+        }
+        
+        return routingHandles;
     }
 }

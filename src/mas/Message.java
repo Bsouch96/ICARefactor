@@ -19,7 +19,7 @@ public class Message implements Serializable
     private final String SENDER;
     private final String USER;
     private final MessageType MESSAGETYPE;
-    private final String ROUTINGUPDATE;
+    private String routingUpdate;
     private Portal PORTALCONNECTION;
     private String prevNodeSignature;
     
@@ -34,7 +34,7 @@ public class Message implements Serializable
         this.SENDER = sender;
         this.USER = null;
         this.MESSAGETYPE = messageType;
-        this.ROUTINGUPDATE = null;
+        this.routingUpdate = null;
         this.PORTALCONNECTION = null;
         this.prevNodeSignature = null;
     }
@@ -50,7 +50,7 @@ public class Message implements Serializable
         this.SENDER = "System";
         this.USER = user;
         this.MESSAGETYPE = messageType;
-        this.ROUTINGUPDATE = null;
+        this.routingUpdate = null;
         this.PORTALCONNECTION = portalConnection;
         this.prevNodeSignature = prevNodeHandle;
     }
@@ -66,7 +66,7 @@ public class Message implements Serializable
         this.SENDER = "Router";
         this.USER = null;
         this.MESSAGETYPE = messageType;
-        this.ROUTINGUPDATE = routingUpdate;
+        this.routingUpdate = routingUpdate;
         this.PORTALCONNECTION = null;
         this.prevNodeSignature = null;
     }
@@ -81,7 +81,7 @@ public class Message implements Serializable
         this.MESSAGETYPE = messageType;
         this.RECEIVER = null;
         this.USER = null;
-        this.ROUTINGUPDATE = null;
+        this.routingUpdate = null;
         this.PORTALCONNECTION = null;
         this.prevNodeSignature = null;
     }
@@ -118,7 +118,7 @@ public class Message implements Serializable
     
     public String getRoutingUpdate()
     {
-        return ROUTINGUPDATE;
+        return routingUpdate;
     }
     
     public Portal getPortalConnection()
@@ -142,6 +142,12 @@ public class Message implements Serializable
     {
         PORTALCONNECTION = portal;
     }
+    
+    public void setRoutingUpdate(String routingUpdate)
+    {
+        this.routingUpdate = routingUpdate;
+    }
+    
     @Override
     public String toString()
     {

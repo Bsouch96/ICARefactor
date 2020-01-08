@@ -7,6 +7,8 @@ package mas;
 
 import java.io.Serializable;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +20,7 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
 {
     protected String userName;
     protected Portal portal;
-    protected Object threadLock = new Object();
+    protected Lock lock = new ReentrantLock();
     
     private Thread t;
     private boolean exit;
@@ -65,9 +67,11 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
     {
         while(!exit)
         {
-            try {
+            try
+            {
                 messageHandler(this.take());
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException ex)
+            {
                 Logger.getLogger(MetaAgent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

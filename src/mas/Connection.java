@@ -76,6 +76,6 @@ public class Connection
     
     public boolean messageWaiting() throws IOException
     {
-        return OBJECTINPUTSTREAM.available() > 0;
+        return INPUTSTREAM.available() > 0;
     }
 }

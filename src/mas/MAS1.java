@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * @author t7091808
  */
-public class MAS
+public class MAS1
 {
 
     /**
@@ -286,41 +286,24 @@ public class MAS
 //        
 //        agent.SendMessage(new Message("Jacob", "Please work", "Ben", MessageType.USERMESSAGE));
         
-        Router router = new Router("R1");
+        Portal portal = new Portal("External P1", "192.168.56.1", 8500);
         
-        Portal portal = new Portal("localPortal", router);
-        
-        UserAgent agent = new UserAgent("Ben", portal);
-        
-       // Thread.sleep(500);
+        UserAgent agent = new UserAgent("ExternalUser", portal);
         
         portal.addAgent(agent);
         
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         
-        System.out.println(router.networkPortals.isEmpty());
-        
-        for(Map.Entry<String, Connection> map : router.networkPortals.entrySet())
+        for(Map.Entry<String, MetaAgent> localMap : portal.routingTable.entrySet())
         {
-            System.out.println("Router External Map Key: " + map.getKey() + "---------------- Value: " + map.getValue());
+            System.out.println("Portal Local Key: " + localMap.getKey() + " --------------------------- Value: " + localMap.getValue().userName);
         }
         
-        for(Map.Entry<String, Connection> map : router.networkPortals.entrySet())
+        for(Map.Entry<String, Socket> localMap : portal.externalTable.entrySet())
         {
-            System.out.println("Router External Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().getHandle());
+            System.out.println("Portal External Key: " + localMap.getKey() + " --------------------------- Value: " + localMap.getValue());
         }
         
-        System.out.println("Portal Local Routing Empty: " + portal.routingTable.isEmpty());
-        
-        for(Map.Entry<String, MetaAgent> map : portal.routingTable.entrySet())
-        {
-            System.out.println("Portal Local Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
-        }
-        
-        System.out.println("Portal External Routing Empty: " + portal.externalTable.isEmpty());
-        
-        System.out.println("Sending new Message to External P1");
-        
-        agent.SendMessage(new Message("External P1", "Please work", "Ben", MessageType.USERMESSAGE));
+        agent.SendMessage(new Message("Ben", "Hello", "Externl P1", MessageType.USERMESSAGE));
     }
 }

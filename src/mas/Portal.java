@@ -15,6 +15,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +41,8 @@ public class Portal extends MetaAgent implements Serializable
     private ObjectInputStream objectInputStream;
     
     
+    
+    
     //Portal to local Router communication.
     public Portal(String userName, Router router)
     {
@@ -50,6 +54,12 @@ public class Portal extends MetaAgent implements Serializable
         this.routingTable = new TreeMap<>();
         this.externalTable = new TreeMap<>();
         this.portalRouter = router;
+        
+        outputStream = null;
+        objectOutputStream = null;
+        inputStream = null;
+        objectInputStream = null;
+        
         //socket = null;
     }
     
@@ -66,6 +76,8 @@ public class Portal extends MetaAgent implements Serializable
         this.portalRouter = null;
         this.ipAddress = ipAddress;
         this.port = port;
+        
+        
         
         connectTo();
     }
@@ -135,7 +147,10 @@ public class Portal extends MetaAgent implements Serializable
     {
         //System.out.println("Portal Contains Key: " + routingTable.containsKey(message.getReceiver()));
         System.out.println("Passed: " + this.userName);
-        
+        System.out.println("PORTAL: MESSAGE TYPE THAT WAS PASSED: " + message.getMessageType());
+        lock.lock();
+        message.setPrevNodeSignature(Portal.this.userName);
+        System.out.println(message.getPrevNodeSignature());
         switch (message.getMessageType())
         {
             case ADDUSERMESSAGE://Local Portal addition to routingTable.
@@ -143,6 +158,7 @@ public class Portal extends MetaAgent implements Serializable
                 {
                     System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
                     routingTable.put(message.getUser(), portalRouter);
+                    lock.unlock();
                 }//Local Portal broadcasting its new agent.
                 else if(routingTable.containsKey(message.getUser()) && portalRouter != null)
                 {
@@ -153,20 +169,26 @@ public class Portal extends MetaAgent implements Serializable
                     {
                         System.out.println("Error!");
                     }
+                    finally
+                    {
+                        lock.unlock();
+                    }
                 }
                 //External Portal broadcasting its new agent.
-                else if(routingTable.containsKey(message.getUser()) && portalRouter == null)
-                {
+                else if(routingTable.containsKey(message.getUser()) && portalSocket != null)
+                {System.out.println("");
                     message.setPortalConnection(null);
                     writeToSocket(message);
-                }//External Portal addition to externalTable.
+                    lock.unlock();
+                }//External Portal addition to externalTable from Router.
                 else if(!externalTable.containsKey(message.getUser()) && portalRouter == null)
                 {
-                    System.out.println(this.userName + ": adding " + message.getUser() + " to routingTable");
                     externalTable.put(message.getUser(), portalSocket);
+                    lock.unlock();
                 }
                 break;
             case USERMESSAGE:
+                System.out.println(externalTable.get(message.getReceiver()));
                 if(routingTable.containsKey(message.getReceiver()) && routingTable.get(message.getReceiver()).equals(portalRouter))
                 {
                     try
@@ -176,13 +198,26 @@ public class Portal extends MetaAgent implements Serializable
                     {
                         System.out.println("Error!");
                     }
+                    finally
+                    {
+                        lock.unlock();
+                    }
                 }
                 else if(externalTable.containsKey(message.getReceiver()) && externalTable.get(message.getReceiver()).equals(portalSocket))
+                {System.out.println(Portal.this.externalTable + ": PASSING TO SOCKET");
                     writeToSocket(message);
+                    lock.unlock();
+                }
                 else if(externalTable.containsKey(message.getReceiver()))
+                {
                     writeToSocket(message);
+                    lock.unlock();
+                }
                 else
+                {
                     System.out.println(this.userName + ": " + "\"" + message.getReceiver() + "\"" + " could not be found.");
+                    lock.unlock();
+                }
                 break;
             case DELETEUSERMESSAGE:
                 if(routingTable.containsKey(message.getUser()))
@@ -198,50 +233,68 @@ public class Portal extends MetaAgent implements Serializable
                         }
                     }
                     else if(portalSocket != null)
+                    {
                         writeToSocket(message);
+                    }
                     
                     routingTable.remove(message.getUser());
+                    lock.unlock();
                 }
                 break;
             case SHAREROUTINGTABLE:
-                updateLocalPortalTable(message);
+                updatePortalTable(message);
+                lock.unlock();
                 break;
             default:
+                lock.unlock();
                 break;
         }
     }
     
     public synchronized void writeToSocket(Message message)
     {
+        lock.lock();
         if(message == null)
             return;
         
         try
         {
             message.setPrevNodeSignature(this.userName);
-            outputStream = portalSocket.getOutputStream();
-            objectOutputStream = new ObjectOutputStream(outputStream);
+            System.out.println(objectOutputStream);
             objectOutputStream.writeObject(message);
+            System.out.println(Portal.this.userName + ": WRITING TO MY SOCKET");
             objectOutputStream.flush();
+            System.out.println(Portal.this.userName + ": FLUSHED");
         }catch (IOException ex)
         {
             Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
         }
+        finally
+        {
+            lock.unlock();
+        }
     }
     
-    public synchronized void updateLocalPortalTable(Message message)
+    public synchronized void updatePortalTable(Message message)
     {
-        if(message == null || message.getRoutingUpdate() == null || message.getRoutingUpdate().equals(""))
-            return;
+        System.out.println("Hit updatePortalTable method.");
 
+        System.out.println(message.getRoutingUpdate());
+        
         String[] newHandles = message.getRoutingUpdate().split("\\|");
         
         for (int i = 0; i < newHandles.length-1; i++)
         {
             if(!routingTable.containsKey(newHandles[i]) && portalRouter != null)
+            {
+                System.out.println(this.userName + ": adding: " + newHandles[i]);
                 routingTable.put(newHandles[i], portalRouter);
-            else
+            }
+            else if(!externalTable.containsKey(newHandles[i]) && portalSocket != null)
+            {
+                System.out.println(this.userName + ": adding: " + newHandles[i]);
                 externalTable.put(newHandles[i], portalSocket);
+            }
         }
     }
     
@@ -267,14 +320,13 @@ public class Portal extends MetaAgent implements Serializable
             {
                 try
                 {
+                    lock.lock();
                     address = InetAddress.getByName(ipAddress);
                     portalSocket = new Socket(address, port);
-                    OutputStream outputStream = portalSocket.getOutputStream();
-                    // create an object output stream from the output stream so we can send an object through it
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                    InputStream inputStream = portalSocket.getInputStream();
-                    // create a DataInputStream so we can read data from it.
-                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                    outputStream = portalSocket.getOutputStream();
+                    objectOutputStream = new ObjectOutputStream(outputStream);
+                    inputStream = portalSocket.getInputStream();
+                    objectInputStream = new ObjectInputStream(inputStream);
                     
                     objectOutputStream.writeObject(new Message(Portal.this.userName, "Hello!", MessageType.HELLO));
                     
@@ -294,7 +346,12 @@ public class Portal extends MetaAgent implements Serializable
                     
                     Message extMessage = (Message)objectInputStream.readObject();
                     if(extMessage.getMessageType().equals(MessageType.HELLOACK))
+                    {
+                        lock.unlock();
                         readFromSocket();
+                    }
+                    else
+                        lock.unlock();
                 }catch(UnknownHostException uh)
                 {
                     Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, uh);
@@ -326,18 +383,24 @@ public class Portal extends MetaAgent implements Serializable
         {   @Override
             public void run()
             {
-                try
+                while(true)
                 {
-                    inputStream = portalSocket.getInputStream();
-                    objectInputStream = new ObjectInputStream(inputStream);
-                    Message extMessage = (Message) objectInputStream.readObject();
-                    messageHandler(extMessage);
-                }catch (IOException ex)
-                {
-                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ClassNotFoundException ex)
-                {
-                    Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                    try
+                    {
+                        if(inputStream.available() > 0)
+                        {
+                            Message extMessage = (Message) objectInputStream.readObject();
+                            Portal.this.put(extMessage);
+                        }
+                    }catch (IOException ex)
+                    {
+                        Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ClassNotFoundException ex)
+                    {
+                        Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });
