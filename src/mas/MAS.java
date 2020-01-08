@@ -7,7 +7,9 @@ public class MAS
 {
 /**
  * The MAS class will be used as a test class to run and test the connections.
- * 
+ * @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+ * @version #1.0
+ * @since 2019/11/06
  */
     public static void main(String[] args) throws InterruptedException
     {

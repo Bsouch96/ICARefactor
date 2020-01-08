@@ -78,8 +78,9 @@ public class UserAgentTest {
     }
     
     /**
-     * 
+     * Test of values method, of class UserAgentTest.
      * @throws InterruptedException 
+     * @see InterruptedException
      */
     @Test
     public void testMessageHandler() throws InterruptedException

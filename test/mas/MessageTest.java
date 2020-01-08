@@ -14,7 +14,7 @@ import org.junit.rules.ExpectedException;
 public class MessageTest {
     
     /**
-     * 
+     * MessageTest() empty constructor.
      */
     public MessageTest()
     {

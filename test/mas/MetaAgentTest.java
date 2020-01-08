@@ -93,15 +93,9 @@ public class MetaAgentTest {
         
     }
 
-    /**
-     * 
-     */
     public class MetaAgentImpl extends MetaAgent 
     {
 
-        /**
-         * 
-         */
         public MetaAgentImpl() 
         {
             super("", null);

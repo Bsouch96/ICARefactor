@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
-* The Message class is used to create different types of messages.
+* The Connection class is used to create the network connections.
 * @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
 * @version #1.0
 * @since 2019/11/06
@@ -25,8 +25,9 @@ public class Connection
     
     /**
      * 
-     * @param socket
+     * @param socket connection to handle network.
      * @throws IOException 
+     * @see IOException.
      */
     Connection(Socket socket) throws IOException
     {
@@ -40,10 +41,11 @@ public class Connection
     }
     
     /**
-     * #
-     * @param handle
-     * @param socket
+     * 
+     * @param handle produces the objects name.
+     * @param socket connection to handle network
      * @throws IOException 
+     * @see IOException.
      */
     Connection(String handle, Socket socket) throws IOException
     {
@@ -57,8 +59,8 @@ public class Connection
     }
     
     /**
-     * 
-     * @return 
+     * getHandle() to return the handle.
+     * @return handle
      */
     public String getHandle()
     {
@@ -66,8 +68,8 @@ public class Connection
     }
     
     /**
-     * 
-     * @param handle 
+     * setHandle() to return the handle.
+     * @param handle produces the objects name.
      */
     public void setHandle(String handle)
     {
@@ -75,8 +77,8 @@ public class Connection
     }
     
     /**
-     * 
-     * @return 
+     * getSocket() to return the handle.
+     * @return getSocket()
      */
     public Socket getSocket()
     {
@@ -85,8 +87,9 @@ public class Connection
     
     /**
      * 
-     * @param message
+     * @param message passes message type USERMESSAGE, DELETEUSERMESSAGE, ADDUSERMESSAGE, SHAREROUTINGTABLE, HELLO, HELLOACK
      * @throws IOException 
+     * @see IOException.
      */
     public void sendClientMessage(Message message) throws IOException
     {
@@ -95,10 +98,12 @@ public class Connection
     }
     
     /**
-     * 
-     * @return
+     * receiveClientMessage() to return OBJECTINPUTSTREAM.
+     * @return 
      * @throws IOException
-     * @throws ClassNotFoundException 
+     * @see IOException.
+     * @throws ClassNotFoundException
+     * @see ClassNotFoundException.
      */
     public Message receiveClientMessage() throws IOException, ClassNotFoundException
     {
@@ -106,9 +111,10 @@ public class Connection
     }
     
     /**
-     * 
-     * @return
+     * messageWaiting() to return OBJECTINPUTSTREAM
+     * @return OBJECTINPUTSTREAM
      * @throws IOException 
+     * @see IOException.
      */
     public boolean messageWaiting() throws IOException
     {
