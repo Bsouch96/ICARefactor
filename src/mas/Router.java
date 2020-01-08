@@ -15,8 +15,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +36,7 @@ public class Router extends MetaAgent
     private Thread acceptThread;
     private ServerSocket serverSocket;
     private Thread socketThread;
+    ReentrantLock networkLock;
     
     public Router(String userName)
     {
@@ -40,7 +44,7 @@ public class Router extends MetaAgent
         routerRouting = new TreeMap<>();
         networkPortals = new TreeMap<>();
         localPortals = new ArrayList<>();
-        
+        networkLock = new ReentrantLock();
         try
         {
             serverSocket = new ServerSocket(8500, 0, InetAddress.getLocalHost());
@@ -121,10 +125,10 @@ public class Router extends MetaAgent
     public synchronized void messageHandler(Message message) 
     {   
         lock.lock();
-        
+        //System.out.println(message.toString());
         if(message.getMessageType().equals(MessageType.ADDUSERMESSAGE) || message.getMessageType().equals(MessageType.USERMESSAGE))
         {
-            System.out.println("ROUTER: PREVIOUS NODE SIGNATURE OF ADD MESSAGE: " + message.getPrevNodeSignature());
+            //System.out.println("ROUTER: PREVIOUS NODE SIGNATURE OF ADD MESSAGE: " + message.getPrevNodeSignature());
             //System.out.println("External P1 message is at Router");
         }
         
@@ -139,8 +143,15 @@ public class Router extends MetaAgent
         {   //if the router doesn't have the new user stored along with the correct portal then we add it to our Tree Map.
             if(!routerRouting.containsKey(message.getUser()) && message.getPortalConnection() != null && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.ADDUSERMESSAGE))
             {
-                System.out.println(message.getPortalConnection().userName);
+                //System.out.println(message.getPortalConnection().userName);
                 routerRouting.put(message.getUser(), message.getPortalConnection());
+            }
+            else if(!networkPortals.containsKey(message.getUser()))
+            {
+                networkLock.lock();
+                networkPortals.put(message.getUser(), networkPortals.get(message.getPrevNodeSignature()));
+                networkLock.unlock();
+                networkPortals.remove(message.getPrevNodeSignature());
             }
             else if(routerRouting.containsKey(message.getUser()) && message.getPortalConnection().getRouter() != null && message.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
             {
@@ -155,12 +166,13 @@ public class Router extends MetaAgent
                     {
                         if(!p.equals(message.getPortalConnection()))
                         {
-                            System.out.println("Router: Passing this new user locally" + message.getUser());
+                            //System.out.println("Router: Passing this new user locally" + message.getUser());
                             p.put(message);
                         }
                         else// if(p.equals(message.getPortalConnection()) && )
                         {
-                            System.out.println("Router: Handles sent to Local Portals: " + getHandles());
+                            //System.out.println("Router: Handles sent to Local Portals: " + getHandles());
+                            message.setPrevNodeSignature(userName);
                             p.put(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                         }
                             
@@ -170,16 +182,21 @@ public class Router extends MetaAgent
                     }
                 });
             }
-            System.out.println("Is network portals empty: " + networkPortals.isEmpty() + " Message Type: " + message.getMessageType() + " from: " + message.getPrevNodeSignature());
+            //System.out.println("Is network portals empty: " + networkPortals.isEmpty() + " Message Type: " + message.getMessageType() + " from: " + message.getPrevNodeSignature());
             if(!networkPortals.isEmpty())
             {
+                networkLock.lock();
+                String oldSender = message.getPrevNodeSignature();
+                System.out.println("old sender: " + oldSender);
                 for(Map.Entry<String, Connection> map : networkPortals.entrySet())
                 {
-                    if(!message.getPrevNodeSignature().equals(networkPortals.containsKey(message.getPrevNodeSignature())))
+                    System.out.println("key is: " + map.getKey());
+                    if(!oldSender.equals(map.getKey()))
                     {
                         try
                         {
                             System.out.println("I shouldnt be here, sending to: " +  networkPortals.get(map.getKey()).getHandle());
+                            message.setPrevNodeSignature(userName);
                             networkPortals.get(map.getKey()).sendClientMessage(message);
                         } catch (IOException ex)
                         {
@@ -191,6 +208,7 @@ public class Router extends MetaAgent
                         try 
                         {
                             System.out.println("Router: Handles sent to network: " + getHandles());
+                            message.setPrevNodeSignature(userName);
                             networkPortals.get(map.getKey()).sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                             //map.getValue().sendClientMessage(new Message(getHandles(), MessageType.SHAREROUTINGTABLE));
                         } catch (IOException ex)
@@ -199,6 +217,7 @@ public class Router extends MetaAgent
                         }
                     }
                 }
+                networkLock.unlock();
                 lock.unlock();
             }
         }//if our message is for users, we search our Tree Map and forward it accordingly.
@@ -206,7 +225,7 @@ public class Router extends MetaAgent
         {
             try
             {
-                System.out.println("Router " + this.userName + ": Passed though router");
+                //System.out.println("Router " + this.userName + ": Passed though router");
                 routerRouting.get(message.getReceiver()).put(message);
             }catch(InterruptedException ie)
             {
@@ -221,7 +240,7 @@ public class Router extends MetaAgent
         {
             try
             {
-                networkPortals.get(message.getSender()).sendClientMessage(message);
+                networkPortals.get(message.getReceiver()).sendClientMessage(message);
             } catch (IOException ex)
             {
                 Logger.getLogger(Router.class.getName()).log(Level.SEVERE, null, ex);
@@ -263,22 +282,30 @@ public class Router extends MetaAgent
                 {
                     try
                     {
-                        for(Map.Entry connectedSockets : networkPortals.entrySet())
+                        networkLock.lock();
+                        ConcurrentHashMap<String, Connection> copy = new ConcurrentHashMap<>(networkPortals);
+                        for(Map.Entry connectedSockets : copy.entrySet())
                         {
                             Connection socket = (Connection) connectedSockets.getValue();
 
                             if(socket.messageWaiting())
                             {
                                 Message extMessage = socket.receiveClientMessage();
-                                System.out.println("ROUTER: READ FROM SOCKET: " + extMessage.getPrevNodeSignature());
+                                /*
                                 if(extMessage.getMessageType().equals(MessageType.ADDUSERMESSAGE)|| extMessage.getMessageType().equals(MessageType.DELETEUSERMESSAGE))
                                 {
-                                    extMessage.setPrevNodeSignature(connectedSockets.getKey().toString());
+                                    //System.out.println("ROUTER: READ FROM SOCKET: " + extMessage.getPrevNodeSignature());
+                                    extMessage.setPrevNodeSignature(connectedSockets.get    Key().toString());
                                 }
-
+                                else
+                                {
+                                    System.out.println("USER MESSAGE");
+                                }
+                                */
                                 Router.this.put(extMessage);
                             }
                         }
+                        networkLock.unlock();
                     }catch (IOException ex)
                     {
                         Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);

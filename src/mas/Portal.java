@@ -35,11 +35,7 @@ public class Portal extends MetaAgent implements Serializable
     private Thread connectionThread;
     private Thread readFromSocketThread;
     private InetAddress address;
-    private OutputStream outputStream;
-    private ObjectOutputStream objectOutputStream;
-    private InputStream inputStream;
-    private ObjectInputStream objectInputStream;
-    
+    Connection connectedRouter;
     
     
     
@@ -55,10 +51,6 @@ public class Portal extends MetaAgent implements Serializable
         this.externalTable = new TreeMap<>();
         this.portalRouter = router;
         
-        outputStream = null;
-        objectOutputStream = null;
-        inputStream = null;
-        objectInputStream = null;
         
         //socket = null;
     }
@@ -146,11 +138,11 @@ public class Portal extends MetaAgent implements Serializable
     public synchronized void messageHandler(Message message)
     {
         //System.out.println("Portal Contains Key: " + routingTable.containsKey(message.getReceiver()));
-        System.out.println("Passed: " + this.userName);
-        System.out.println("PORTAL: MESSAGE TYPE THAT WAS PASSED: " + message.getMessageType());
+        //System.out.println("Passed: " + this.userName);
+        //System.out.println("PORTAL: MESSAGE TYPE THAT WAS PASSED: " + message.getMessageType());
         lock.lock();
-        message.setPrevNodeSignature(Portal.this.userName);
-        System.out.println(message.getPrevNodeSignature());
+        
+        //System.out.println(message.getPrevNodeSignature());
         switch (message.getMessageType())
         {
             case ADDUSERMESSAGE://Local Portal addition to routingTable.
@@ -164,7 +156,11 @@ public class Portal extends MetaAgent implements Serializable
                 {
                     try
                     {
-                        portalRouter.put(message);
+                        if(!message.getPrevNodeSignature().equals(portalRouter.userName))
+                        {
+                            message.setPrevNodeSignature(Portal.this.userName);
+                            portalRouter.put(message);
+                        }
                     }catch(InterruptedException ie)
                     {
                         System.out.println("Error!");
@@ -176,23 +172,29 @@ public class Portal extends MetaAgent implements Serializable
                 }
                 //External Portal broadcasting its new agent.
                 else if(routingTable.containsKey(message.getUser()) && portalSocket != null)
-                {System.out.println("");
+                {
                     message.setPortalConnection(null);
-                    writeToSocket(message);
+                    if(!message.getPrevNodeSignature().equals(connectedRouter.getHandle()))
+                    {
+                        message.setPrevNodeSignature(Portal.this.userName);
+                        writeToSocket(message);
+                    }
                     lock.unlock();
                 }//External Portal addition to externalTable from Router.
                 else if(!externalTable.containsKey(message.getUser()) && portalRouter == null)
                 {
+                    message.setPrevNodeSignature(Portal.this.userName);
                     externalTable.put(message.getUser(), portalSocket);
                     lock.unlock();
                 }
                 break;
             case USERMESSAGE:
-                System.out.println(externalTable.get(message.getReceiver()));
-                if(routingTable.containsKey(message.getReceiver()) && routingTable.get(message.getReceiver()).equals(portalRouter))
+                //System.out.println(externalTable.get(message.getReceiver()));
+                if(routingTable.containsKey(message.getReceiver()))
                 {
                     try
                     {
+                        message.setPrevNodeSignature(Portal.this.userName);
                         routingTable.get(message.getReceiver()).put(message);
                     }catch(InterruptedException ie)
                     {
@@ -204,12 +206,14 @@ public class Portal extends MetaAgent implements Serializable
                     }
                 }
                 else if(externalTable.containsKey(message.getReceiver()) && externalTable.get(message.getReceiver()).equals(portalSocket))
-                {System.out.println(Portal.this.externalTable + ": PASSING TO SOCKET");
+                {//System.out.println(Portal.this.externalTable + ": PASSING TO SOCKET");
+                    message.setPrevNodeSignature(Portal.this.userName);
                     writeToSocket(message);
                     lock.unlock();
                 }
                 else if(externalTable.containsKey(message.getReceiver()))
                 {
+                    message.setPrevNodeSignature(Portal.this.userName);
                     writeToSocket(message);
                     lock.unlock();
                 }
@@ -226,6 +230,7 @@ public class Portal extends MetaAgent implements Serializable
                     {
                         try
                         {
+                            message.setPrevNodeSignature(Portal.this.userName);
                             portalRouter.put(message);
                         }catch(InterruptedException ie)
                         {
@@ -234,6 +239,7 @@ public class Portal extends MetaAgent implements Serializable
                     }
                     else if(portalSocket != null)
                     {
+                        message.setPrevNodeSignature(Portal.this.userName);
                         writeToSocket(message);
                     }
                     
@@ -242,6 +248,7 @@ public class Portal extends MetaAgent implements Serializable
                 }
                 break;
             case SHAREROUTINGTABLE:
+                message.setPrevNodeSignature(Portal.this.userName);
                 updatePortalTable(message);
                 lock.unlock();
                 break;
@@ -260,11 +267,10 @@ public class Portal extends MetaAgent implements Serializable
         try
         {
             message.setPrevNodeSignature(this.userName);
-            System.out.println(objectOutputStream);
-            objectOutputStream.writeObject(message);
-            System.out.println(Portal.this.userName + ": WRITING TO MY SOCKET");
-            objectOutputStream.flush();
-            System.out.println(Portal.this.userName + ": FLUSHED");
+            connectedRouter.sendClientMessage(message);
+            //System.out.println(Portal.this.userName + ": WRITING TO MY SOCKET");
+            //objectOutputStream.flush();
+            //System.out.println(Portal.this.userName + ": FLUSHED");
         }catch (IOException ex)
         {
             Logger.getLogger(Portal.class.getName()).log(Level.SEVERE, null, ex);
@@ -277,9 +283,9 @@ public class Portal extends MetaAgent implements Serializable
     
     public synchronized void updatePortalTable(Message message)
     {
-        System.out.println("Hit updatePortalTable method.");
+        //System.out.println("Hit updatePortalTable method.");
 
-        System.out.println(message.getRoutingUpdate());
+        //System.out.println(message.getRoutingUpdate());
         
         String[] newHandles = message.getRoutingUpdate().split("\\|");
         
@@ -287,12 +293,12 @@ public class Portal extends MetaAgent implements Serializable
         {
             if(!routingTable.containsKey(newHandles[i]) && portalRouter != null)
             {
-                System.out.println(this.userName + ": adding: " + newHandles[i]);
+                //System.out.println(this.userName + ": adding: " + newHandles[i]);
                 routingTable.put(newHandles[i], portalRouter);
             }
             else if(!externalTable.containsKey(newHandles[i]) && portalSocket != null)
             {
-                System.out.println(this.userName + ": adding: " + newHandles[i]);
+                //System.out.println(this.userName + ": adding: " + newHandles[i]);
                 externalTable.put(newHandles[i], portalSocket);
             }
         }
@@ -323,16 +329,13 @@ public class Portal extends MetaAgent implements Serializable
                     lock.lock();
                     address = InetAddress.getByName(ipAddress);
                     portalSocket = new Socket(address, port);
-                    outputStream = portalSocket.getOutputStream();
-                    objectOutputStream = new ObjectOutputStream(outputStream);
-                    inputStream = portalSocket.getInputStream();
-                    objectInputStream = new ObjectInputStream(inputStream);
+                    connectedRouter = new Connection(portalSocket);
                     
-                    objectOutputStream.writeObject(new Message(Portal.this.userName, "Hello!", MessageType.HELLO));
+                    connectedRouter.sendClientMessage(new Message(Portal.this.userName, "Hello!", MessageType.HELLO));
                     
                     int timeout = 0;
                     
-                    while(inputStream.available() == 0)
+                    while(!connectedRouter.messageWaiting())
                     {
                         //increase timeout to some point and close if times out
                         timeout++;
@@ -344,10 +347,11 @@ public class Portal extends MetaAgent implements Serializable
                         }
                     }
                     
-                    Message extMessage = (Message)objectInputStream.readObject();
+                    Message extMessage = connectedRouter.receiveClientMessage();
                     if(extMessage.getMessageType().equals(MessageType.HELLOACK))
                     {
                         lock.unlock();
+                        connectedRouter.setHandle(extMessage.getSender());
                         readFromSocket();
                     }
                     else
@@ -387,9 +391,9 @@ public class Portal extends MetaAgent implements Serializable
                 {
                     try
                     {
-                        if(inputStream.available() > 0)
+                        if(connectedRouter.messageWaiting())
                         {
-                            Message extMessage = (Message) objectInputStream.readObject();
+                            Message extMessage = connectedRouter.receiveClientMessage();
                             Portal.this.put(extMessage);
                         }
                     }catch (IOException ex)

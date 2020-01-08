@@ -303,7 +303,8 @@ public class MAS1
         {
             System.out.println("Portal External Key: " + localMap.getKey() + " --------------------------- Value: " + localMap.getValue());
         }
-        
+        for(Map.Entry<String, Socket> localMap : portal.externalTable.entrySet())
+            System.out.println(localMap.getKey());
         agent.SendMessage(new Message("Ben", "Hello", "Externl P1", MessageType.USERMESSAGE));
     }
 }

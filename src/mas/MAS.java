@@ -291,13 +291,14 @@ public class MAS
         Portal portal = new Portal("localPortal", router);
         
         UserAgent agent = new UserAgent("Ben", portal);
+        //UserAgent agent2 = new UserAgent("Benss", portal);
         
        // Thread.sleep(500);
-        
         portal.addAgent(agent);
+        //portal.addAgent(agent2);
         
         Thread.sleep(10000);
-        
+        //agent2.SendMessage(new Message("Ben", "Please work", "Benss", MessageType.USERMESSAGE));
         System.out.println(router.networkPortals.isEmpty());
         
         for(Map.Entry<String, Connection> map : router.networkPortals.entrySet())
@@ -315,12 +316,13 @@ public class MAS
         for(Map.Entry<String, MetaAgent> map : portal.routingTable.entrySet())
         {
             System.out.println("Portal Local Map Key: " + map.getKey() + "---------------- Value: " + map.getValue().userName);
+            System.out.println("PORTAL MAP ENTRY: "+map.getKey());
         }
         
         System.out.println("Portal External Routing Empty: " + portal.externalTable.isEmpty());
         
-        System.out.println("Sending new Message to External P1");
+        System.out.println("Sending new Message to ExternalUser");
         
-        agent.SendMessage(new Message("External P1", "Please work", "Ben", MessageType.USERMESSAGE));
+        agent.SendMessage(new Message("ExternalUser", "Please work", "Ben", MessageType.USERMESSAGE));
     }
 }
