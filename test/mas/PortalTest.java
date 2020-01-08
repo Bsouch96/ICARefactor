@@ -42,6 +42,15 @@ public class PortalTest {
         Router router = new Router("R1");
         Portal portal = new Portal("", router);
     }
+    @Test
+    public void testWriteToSocketNullMessage()
+    {
+        System.out.println("Testing Write to socket null message");
+        Router router = new Router("R1");
+        Portal portal = new Portal("", router);
+        Message nullmsg = null;
+        portal.writeToSocket(nullmsg);
+    }
     
     /**
      * Testing the IllegalArgumentException thrown when creating a new Portal and the Portal userName variable is null.
@@ -200,41 +209,5 @@ public class PortalTest {
         thrown.expectMessage("Please ensure that your IP Address is appropriate and your Port is not less than 8000");
         Portal portal = new Portal("P1", "152.0.0.0", -1425);
     }
-    @Test
-    public void testMessageHandler() throws InterruptedException 
-    {
-        System.out.println("messageHandler");
-        Router router = new Router("R1");
-        Portal portal1 = new Portal("P1", router);
-        Portal portal2 = new Portal("P2", router);
-        UserAgent user1 = new UserAgent("A1", portal1);
-        Message message = new Message("P1", "Hello P2!", "A1", MessageType.USERMESSAGE);
-        portal1.addAgent(user1);
-        String result = "";
-        
-        Thread.sleep(500);
-        PrintStream originalOut = System.out;
-        try {
-        ByteArrayOutputStream os = new ByteArrayOutputStream(100);
-        PrintStream capture = new PrintStream(os);
-        // From this point on, everything printed to System.out will get captured
-        
-        
-        System.setOut(capture);
-        user1.SendMessage(message);
-        Thread.sleep(500);
-        capture.flush();
-        result = os.toString();
-        } 
-        finally 
-        {
-        System.setOut(originalOut);
-        }
-        String expResult = "Message direct to portal: " + result;
-        result = result.trim();
-        assertEquals(expResult, result);
-        System.out.println(message.toString());
-        System.out.println(result);
-        
-    }
+    
 }

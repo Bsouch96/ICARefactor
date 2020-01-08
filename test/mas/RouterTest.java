@@ -8,6 +8,7 @@ package mas;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.TreeMap;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -67,7 +68,7 @@ public class RouterTest {
     public void testWaitForConnection() {
         System.out.println("waitForConnection");
         Router instance = null;
-        instance.waitForConnection();
+        //instance.waitForConnection();
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -121,13 +122,24 @@ public class RouterTest {
      */
     @Test
     public void testGetRouterRouting() {
+        
+        
         System.out.println("getRouterRouting");
-        Router instance = null;
-        TreeMap expResult = null;
+        Router router = new Router("R1");
+        Portal portal1 = new Portal("P1", router);
+        Portal portal2 = new Portal("P2", router);
+        UserAgent user1 = new UserAgent("A1", portal1);
+        UserAgent user2 = new UserAgent("A2", portal1);
+        UserAgent user3 = new UserAgent("A3", portal2);
+        Message message = new Message("A3", "Hello A1!", "A1", MessageType.USERMESSAGE);
+        portal1.addAgent(user1);
+        portal1.addAgent(user2);
+        portal2.addAgent(user3);
+        Router instance = router;
+        TreeMap expResult = router.getRouterRouting();
         TreeMap result = instance.getRouterRouting();
         assertEquals(result ,expResult );
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
     }
 
     /**
@@ -136,26 +148,73 @@ public class RouterTest {
     @Test
     public void testGetNetworkPortals() {
         System.out.println("getNetworkPortals");
-        Router instance = null;
-        TreeMap expResult = null;
+        System.out.println("getRouterRouting");
+        Router router = new Router("R1");
+        Portal portal1 = new Portal("P1", router);
+        Portal portal2 = new Portal("P2", router);
+        UserAgent user1 = new UserAgent("A1", portal1);
+        UserAgent user2 = new UserAgent("A2", portal1);
+        UserAgent user3 = new UserAgent("A3", portal2);
+        Message message = new Message("A3", "Hello A1!", "A1", MessageType.USERMESSAGE);
+        portal1.addAgent(user1);
+        portal1.addAgent(user2);
+        portal2.addAgent(user3);
+        Router instance = router;
+        TreeMap expResult = router.getNetworkPortals();
         TreeMap result = instance.getNetworkPortals();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
     }
 
     /**
      * Test of getLocalPortals method, of class Router.
      */
     @Test
-    public void testGetLocalPortals() {
-        System.out.println("getLocalPortals");
-        Router instance = null;
-        ArrayList<Portal> expResult = null;
+    public void testGetLocalPortals() 
+    {
+        System.out.println("getRouterRouting");
+        Router router = new Router("R1");
+        Portal portal1 = new Portal("P1", router);
+        Portal portal2 = new Portal("P2", router);
+        UserAgent user1 = new UserAgent("A1", portal1);
+        UserAgent user2 = new UserAgent("A2", portal1);
+        UserAgent user3 = new UserAgent("A3", portal2);
+        Message message = new Message("A3", "Hello A1!", "A1", MessageType.USERMESSAGE);
+        portal1.addAgent(user1);
+        portal1.addAgent(user2);
+        portal2.addAgent(user3);
+        Router instance = router;
+        ArrayList<Portal> expResult = router.getLocalPortals();
         ArrayList<Portal> result = instance.getLocalPortals();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(result ,expResult );
     }
-    
+    @Test
+    public void testMessageHandlerDeleteMessage() throws InterruptedException 
+    {
+        System.out.println("messageHandler");
+        Router router = new Router("R1");
+        Portal portal1 = new Portal("P1", router);
+        Portal portal2 = new Portal("P2", router);
+        UserAgent user1 = new UserAgent("A1", portal1);
+        UserAgent user2 = new UserAgent("A2", portal1);
+        UserAgent user3 = new UserAgent("A3", portal2);
+        Message message = new Message("R1", "A1",user1.portal, MessageType.DELETEUSERMESSAGE);
+        portal1.addAgent(user1);
+        portal1.addAgent(user2);
+        portal2.addAgent(user3);
+        
+        router.messageHandler(message);
+        boolean result = false;
+        
+        if(!router.routerRouting.containsKey("A1"))
+        {
+            result = true;
+        }
+        
+        
+        boolean expResult = true;
+        assertEquals(expResult, result);
+        
+        
+    }
 }
