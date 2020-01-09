@@ -25,7 +25,7 @@ public class UserAgent extends MetaAgent
             System.out.println(message.toString());
     }
     
-    public void SendMessage(Message message)
+    public void sendMessage(Message message)
     {
         if(message == null)
             return;

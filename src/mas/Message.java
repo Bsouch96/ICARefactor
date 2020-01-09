@@ -20,7 +20,7 @@ public class Message implements Serializable
     private final String USER;
     private final MessageType MESSAGETYPE;
     private String routingUpdate;
-    private Portal PORTALCONNECTION;
+    private Portal portalConnection;
     private String prevNodeSignature;
     
     //UserMessage Constructor
@@ -35,7 +35,7 @@ public class Message implements Serializable
         this.USER = null;
         this.MESSAGETYPE = messageType;
         this.routingUpdate = null;
-        this.PORTALCONNECTION = null;
+        this.portalConnection = null;
         this.prevNodeSignature = null;
     }
     
@@ -51,7 +51,7 @@ public class Message implements Serializable
         this.USER = user;
         this.MESSAGETYPE = messageType;
         this.routingUpdate = null;
-        this.PORTALCONNECTION = portalConnection;
+        this.portalConnection = portalConnection;
         this.prevNodeSignature = prevNodeHandle;
     }
     
@@ -67,7 +67,7 @@ public class Message implements Serializable
         this.USER = null;
         this.MESSAGETYPE = messageType;
         this.routingUpdate = routingUpdate;
-        this.PORTALCONNECTION = null;
+        this.portalConnection = null;
         this.prevNodeSignature = null;
     }
 
@@ -82,7 +82,7 @@ public class Message implements Serializable
         this.RECEIVER = null;
         this.USER = null;
         this.routingUpdate = null;
-        this.PORTALCONNECTION = null;
+        this.portalConnection = null;
         this.prevNodeSignature = null;
     }
     
@@ -123,7 +123,7 @@ public class Message implements Serializable
     
     public Portal getPortalConnection()
     {
-        return PORTALCONNECTION;
+        return portalConnection;
     }
     
     public String getPrevNodeSignature()
@@ -140,7 +140,7 @@ public class Message implements Serializable
     }
     public void setPortalConnection(Portal portal)
     {
-        PORTALCONNECTION = portal;
+        portalConnection = portal;
     }
     
     public void setRoutingUpdate(String routingUpdate)

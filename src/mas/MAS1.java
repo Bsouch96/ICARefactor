@@ -17,8 +17,8 @@ public class MAS1
      */
     public static void main(String[] args) throws InterruptedException
     {
-        Portal portal = new Portal("External P1", "192.168.56.1", 8500);
-        Portal portal2 = new Portal("External P2", "192.168.56.1", 8500);
+        Portal portal = new Portal("External P1", "80.6.168.142", 8500);
+        Portal portal2 = new Portal("External P2", "80.6.168.142", 8500);
         
         UserAgent agent = new UserAgent("External User", portal);
         UserAgent agent2 = new UserAgent("External User2", portal2);

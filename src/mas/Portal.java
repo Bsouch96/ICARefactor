@@ -26,8 +26,8 @@ import java.util.logging.Logger;
  */
 public class Portal extends MetaAgent implements Serializable
 {
-    public volatile TreeMap<String, MetaAgent> routingTable;
-    public volatile TreeMap<String, Socket> externalTable;
+    private volatile TreeMap<String, MetaAgent> routingTable;
+    private volatile TreeMap<String, Socket> externalTable;
     private Socket portalSocket; //Create Socket here for external connections to Routers.
     private Router portalRouter; //Local Router connection.
     private String ipAddress;
@@ -35,7 +35,7 @@ public class Portal extends MetaAgent implements Serializable
     private Thread connectionThread;
     private Thread readFromSocketThread;
     private InetAddress address;
-    Connection connectedRouter;
+    private Connection connectedRouter;
     
     
     
@@ -369,16 +369,6 @@ public class Portal extends MetaAgent implements Serializable
             }
         });
         connectionThread.start();
-    }
-    
-    //Should match 0.0.0.0 - 255.255.255.255
-    public boolean validateIpAddress(String ipAddress)
-    {
-        return ipAddress.matches("\\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
-                        "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
-                        "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.\n" +
-                        "  (25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\b");
-            
     }
     
     public void readFromSocket()

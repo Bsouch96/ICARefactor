@@ -30,13 +30,13 @@ import java.util.logging.Logger;
  */
 public class Router extends MetaAgent
 {
-    public volatile TreeMap<String, MetaAgent> routerRouting;
-    public volatile TreeMap<String, Connection> networkPortals;
-    public volatile ArrayList<Portal> localPortals;
+    private volatile TreeMap<String, MetaAgent> routerRouting;
+    private volatile TreeMap<String, Connection> networkPortals;
+    private volatile ArrayList<Portal> localPortals;
     private Thread acceptThread;
     private ServerSocket serverSocket;
     private Thread socketThread;
-    ReentrantLock networkLock;
+    private ReentrantLock networkLock;
     
     public Router(String userName)
     {
