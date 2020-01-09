@@ -13,9 +13,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author V8178742
- */
+
+* The MessageAgent class is an abstract class which is a parent to the userAgent class.
+
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+
+* @version #1.0
+
+* @since 2019/11/06
+
+*/
 public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements Runnable, Serializable
 {
     protected String userName;
@@ -25,7 +32,19 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
     private Thread t;
     private boolean exit;
 
-    //UserAgents make use of this constructor
+    /**
+
+     * The MetaAgent() makes use of the userName and portal to start a thread.
+
+     * @param userName created to start the thread.
+
+     * @param portal created to start the thread.
+
+     * @throws IllegalArgumentException
+
+     * @see IllegalArgumentException.
+
+     */
     public MetaAgent(String userName, Portal portal) 
     {
         super(100);
@@ -40,7 +59,17 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
         startThread();
     }
     
-    //Portals and Routers make use of this constructor.
+    /**
+
+     * The MetaAgent() makes use of the userName to start a thread.
+
+     * @param userName used as a unique id within the MAS.
+
+     * @throws IllegalArgumentException
+
+     * @see IllegalArgumentException.
+
+     */
     public MetaAgent(String userName) 
     {
         super(100);
@@ -55,13 +84,25 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
         startThread();
     }
     
+    /**
 
+     * startThread() to start the thread.
+
+     */
     private void startThread() 
     {
         t = new Thread(this);
         t.start();
     }
-    
+    /**
+
+     * run() to run and log thread.
+
+     * @throws IllegalArgumentException ex.
+
+     * @see IllegalArgumentException.
+
+     */
     @Override
     public void run()
     {
@@ -76,12 +117,22 @@ public abstract class MetaAgent extends ArrayBlockingQueue<Message> implements R
             }
         }
     }
-    
+    /**
+
+     *  stop() to exit the thread.
+
+     */
     public void stop()
     {
         exit = true;
     }
-    
+    /**
+
+     * messageHandler() makes use of the message().
+
+     * @param message system print out the message body. 
+
+     */
     public void messageHandler(Message message)
     {
         System.out.println(message.getMessageBody());

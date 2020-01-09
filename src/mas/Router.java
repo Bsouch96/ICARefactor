@@ -25,9 +25,16 @@ import java.util.logging.Logger;
 
 
 /**
- *
- * @author V8178742
- */
+
+* The Message class is used to create different types of messages.
+
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+
+* @version #1.0
+
+* @since 2019/11/06
+
+*/
 public class Router extends MetaAgent
 {
     private volatile TreeMap<String, MetaAgent> routerRouting;

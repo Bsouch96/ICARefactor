@@ -101,7 +101,7 @@ public class RouterTest {
         
         
         System.setOut(capture);
-        user3.SendMessage(message);
+        user3.sendMessage(message);
         Thread.sleep(500);
         capture.flush();
         result = os.toString();
@@ -206,7 +206,7 @@ public class RouterTest {
         router.messageHandler(message);
         boolean result = false;
         
-        if(!router.routerRouting.containsKey("A1"))
+        if(!router.getRouterRouting().containsKey("A1"))
         {
             result = true;
         }

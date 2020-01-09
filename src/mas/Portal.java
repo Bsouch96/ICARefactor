@@ -21,9 +21,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author V8178742
- */
+
+* The Portal class implements a portal which communicates to a local router.
+
+* @author Ben Souch, Jacob Jardine, Teddy Teasdale, Michael Wasell
+
+* @version #1.0
+
+* @since 2019/11/06
+
+*/
 public class Portal extends MetaAgent implements Serializable
 {
     private volatile TreeMap<String, MetaAgent> routingTable;
@@ -39,7 +46,15 @@ public class Portal extends MetaAgent implements Serializable
     
     
     
-    //Portal to local Router communication.
+    /**
+
+     * 
+
+     * @param userName
+
+     * @param router 
+
+     */
     public Portal(String userName, Router router)
     {
         super(userName);
@@ -54,8 +69,18 @@ public class Portal extends MetaAgent implements Serializable
         
         //socket = null;
     }
-    
-    //Portal to external Router communication.
+    /**
+
+     * Portal to external Router communication.
+
+     * @param userName
+
+     * @param ipAddress
+
+     * @param port 
+
+     */
+    //
     public Portal(String userName, String ipAddress, int port)
     {
         super(userName);

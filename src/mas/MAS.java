@@ -32,19 +32,19 @@ public class MAS
         
         Thread.sleep(10000);
         
-        agent.SendMessage(new Message("External User", "Please work", "Ben", MessageType.USERMESSAGE));
+        agent.sendMessage(new Message("External User", "Please work", "Ben", MessageType.USERMESSAGE));
         
         for (int i = 0; i < 100; i++)
         {
-            agent.SendMessage(new Message("External User", "Please work", "Ben", MessageType.USERMESSAGE));
+            agent.sendMessage(new Message("External User", "Please work", "Ben", MessageType.USERMESSAGE));
         }
         
         for (int i = 0; i < 100; i++)
         {
-            agent2.SendMessage(new Message("Ben", "NextMessage", "Agent2", MessageType.USERMESSAGE));//Local user agent2 to local user Ben
-            agent3.SendMessage(new Message("Agent2", "AnotherMessage", "Agent3", MessageType.USERMESSAGE));//Local user agent3 to local user agent 2
-            agent2.SendMessage(new Message("External User", "Please work", "Agent2", MessageType.USERMESSAGE));
-            agent3.SendMessage(new Message("External User2", "Please work", "Agent3", MessageType.USERMESSAGE));
+            agent2.sendMessage(new Message("Ben", "NextMessage", "Agent2", MessageType.USERMESSAGE));//Local user agent2 to local user Ben
+            agent3.sendMessage(new Message("Agent2", "AnotherMessage", "Agent3", MessageType.USERMESSAGE));//Local user agent3 to local user agent 2
+            agent2.sendMessage(new Message("External User", "Please work", "Agent2", MessageType.USERMESSAGE));
+            agent3.sendMessage(new Message("External User2", "Please work", "Agent3", MessageType.USERMESSAGE));
         }
     }
 }

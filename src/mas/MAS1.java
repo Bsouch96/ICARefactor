@@ -30,9 +30,9 @@ public class MAS1
         
         for (int i = 0; i < 100; i++)
         {
-            agent.SendMessage(new Message("Ben", "Hello", "External User", MessageType.USERMESSAGE));
-            agent2.SendMessage(new Message("External User", "Hello", "External User2", MessageType.USERMESSAGE));
-            agent2.SendMessage(new Message("Ben", "Hello", "Hello", MessageType.USERMESSAGE));
+            agent.sendMessage(new Message("Ben", "Hello", "External User", MessageType.USERMESSAGE));
+            agent2.sendMessage(new Message("External User", "Hello", "External User2", MessageType.USERMESSAGE));
+            agent2.sendMessage(new Message("Ben", "Hello", "Hello", MessageType.USERMESSAGE));
         }
     }
 }

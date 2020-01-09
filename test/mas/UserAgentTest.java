@@ -103,7 +103,7 @@ public class UserAgentTest {
         // From this point on, everything printed to System.out will get captured
         
         System.setOut(capture);
-        user3.SendMessage(message);
+        user3.sendMessage(message);
         Thread.sleep(500);
         capture.flush();
         result = os.toString();
